@@ -1,0 +1,5 @@
+1 - git checkout -b nombre-de-mi-nueva-funcionalidad
+2 - Desarrollas sin miedo
+3 - git add . git commit -m "mensaje"
+4 - Si falla → y borras la rama git checkout main
+5 -Si funciona → → → git checkout main git merge ... git push

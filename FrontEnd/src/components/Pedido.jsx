@@ -15,6 +15,11 @@ const Pedido = () => {
     const [formasPago, setFormasPago] = useState([]);
     const [formaPago, setFormaPago] = useState('');
     const [fechaVencimiento, setFechaVencimiento] = useState('');
+    // ✅ Estados adicionales para manejar la creación del pedido
+    const [guardandoPedido, setGuardandoPedido] = useState(false);
+    // const [numeroPedidoCreado, setNumeroPedidoCreado] = useState(null); // ❌ Ya no se usa directamente
+    const [pedidoCreado, setPedidoCreado] = useState(null); // ✅ Nuevo estado para el pedido completo
+    // const [mostrarPDF, setMostrarPDF] = useState(false); // ❌ Ya no se usa directamente
 
     useEffect(() => {
         const cargarCatalogos = async () => {
@@ -64,9 +69,52 @@ const Pedido = () => {
         setPaso(paso === 'confirmacion' ? 'pedido' : 'cliente');
     };
 
-    const confirmarPedido = () => {
-        alert("✅ Pedido confirmado con éxito");
-        // Aquí enviarías al backend
+    // ✅ Función corregida para crear el pedido en el backend
+    const confirmarPedido = async (datosConfirmacion) => {
+        // Extraer datos del formulario de confirmación
+        // const { fechaEntrega, ordenCompra, observaciones, emailOpcional } = datosConfirmacion; // Puedes usarlos si el backend los necesita
+
+        // Obtener ID del vendedor del localStorage (simulando autenticación)
+        const usuario = JSON.parse(localStorage.getItem('usuario'));
+        const idVendedor = usuario?.id;
+
+        setGuardandoPedido(true);
+        // setNumeroPedidoCreado(null); // ❌ Ya no se usa
+        // setMostrarPDF(false); // ❌ Ya no se usa
+        setPedidoCreado(null); // ✅ Resetear pedido anterior
+
+        try {
+            const response = await API.post('/pedidos', {
+                idCliente: cliente.id_cliente,
+                fechaVencimiento,
+                idFormaPago: formaPago,
+                idListaPrecios: listaPrecios,
+                total,
+                carrito,
+                idVendedor, // ✅ Enviar ID del vendedor
+                // Puedes enviar también fechaEntrega, ordenCompra, observaciones, emailOpcional si el backend los necesita
+            });
+
+            const pedidoCreado = response.data;
+            // setNumeroPedidoCreado(pedidoCreado.numero_pedido); // ❌ Ya no se usa
+            // setMostrarPDF(true); // ❌ Ya no se usa
+            setPedidoCreado(pedidoCreado); // ✅ Guardar el pedido completo
+
+            console.log("✅ Pedido creado con éxito:", pedidoCreado.numero_pedido);
+
+        } catch (error) {
+            console.error("❌ Error al crear pedido:", error);
+            alert("Error al crear el pedido. Por favor, inténtelo de nuevo.");
+        } finally {
+            setGuardandoPedido(false);
+        }
+    };
+
+    // ✅ Función para reiniciar el flujo después de crear el pedido
+    const reiniciarFlujo = () => {
+        // setMostrarPDF(false); // ❌ Ya no se usa
+        // setNumeroPedidoCreado(null); // ❌ Ya no se usa
+        setPedidoCreado(null); // ✅ Resetear pedido
         setPaso('cliente');
         setCliente(null);
         setCarrito([]);
@@ -208,12 +256,17 @@ const Pedido = () => {
                 {/* Paso Confirmación */}
                 {paso === 'confirmacion' && (
                     <ConfirmacionPedido
-                        carrito={carrito}
-                        total={total}
-                        cliente={cliente}
-                        fechaVencimiento={fechaVencimiento}
-                        formaPago={formasPago.find(fp => fp.IdPago == formaPago)?.Descripcion || ''}
-                        onConfirmar={confirmarPedido}
+                        // carrito={carrito}
+                        // total={total}
+                        // cliente={cliente}
+                        // fechaVencimiento={fechaVencimiento}
+                        // formaPago={formasPago.find(fp => fp.IdPago == formaPago)?.Descripcion || ''} // ❌ Ya no se pasa así
+                        onConfirmar={confirmarPedido} // ✅ Pasar la función corregida
+                        guardando={guardandoPedido} // ✅ Pasar estado de carga
+                        // numeroPedido={numeroPedidoCreado} // ❌ Ya no se pasa así
+                        // mostrarPDF={mostrarPDF} // ❌ Ya no se pasa así
+                        // onCerrarPDF={reiniciarFlujo} // ❌ Ya no se pasa así
+                        pedidoCreado={pedidoCreado} // ✅ Pasar el pedido creado completo
                     />
                 )}
 

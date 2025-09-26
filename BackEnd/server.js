@@ -1,3 +1,5 @@
+//BackEnd/server.js
+
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -34,3 +36,9 @@ app.listen(PORT, () => {
     console.log(`🚀 Servidor backend corriendo en http://localhost:${PORT}`);
     console.log(`📊 Prueba manual: http://localhost:${PORT}/health`);
 });
+
+// ✅ Configuración específica para producción
+app.use(cors({
+    origin: 'https://mediumturquoise-parrot-283564.hostingersite.com', // ✅ Tu dominio en Hostinger
+    credentials: true
+}));

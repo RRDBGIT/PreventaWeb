@@ -1,5 +1,7 @@
+// BackEnd/controllers/authController.js
+
 const db = require('../models/db');
-const bcrypt = require('bcryptjs');
+// const bcrypt = require('bcryptjs'); // ❌ Comentar o eliminar esta línea , para trabajar con archivos planos
 const jwt = require('jsonwebtoken');
 
 exports.login = async (req, res) => {
@@ -16,9 +18,9 @@ exports.login = async (req, res) => {
         }
 
         const user = rows[0];
-        const isMatch = await bcrypt.compare(password, user.Password);
-
-        if (!isMatch) {
+        
+        // ✅ Comparar contraseña en texto plano (sin bcrypt)
+        if (password !== user.Password) {
             return res.status(401).json({ msg: 'Credenciales inválidas' });
         }
 

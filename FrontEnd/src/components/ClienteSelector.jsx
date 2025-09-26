@@ -9,11 +9,15 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
         telefono: '',
         idLocalidad: '',
         cuit: '',
-        saldo: 0
+        saldo: 0,
+        latitud: null,
+        longitud: null
     });
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
     const [localidades, setLocalidades] = useState([]);
     const [busqueda, setBusqueda] = useState('');
+    const [cargandoGeolocalizacion, setCargandoGeolocalizacion] = useState(false);
+    const [errorGeolocalizacion, setErrorGeolocalizacion] = useState('');
 
     // Cargar clientes y localidades al cargar el componente
     useEffect(() => {
@@ -33,28 +37,40 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
         cargarDatos();
     }, []);
 
-    // Generar número de cliente automático
-    const generarNumeroCliente = () => {
-        if (clientes.length === 0) {
-            return 'CL001';
-        }
-
-        const ultimoCliente = clientes.reduce((prev, curr) => {
-            const numPrev = parseInt(prev.numero_cliente?.replace('CL', '') || 0, 10);
-            const numCurr = parseInt(curr.numero_cliente?.replace('CL', '') || 0, 10);
-            return numCurr > numPrev ? curr : prev;
-        });
-
-        const num = parseInt(ultimoCliente.numero_cliente?.replace('CL', '') || 0, 10) + 1;
-        return `CL${num.toString().padStart(3, '0')}`;
-    };
-
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setNuevoCliente(prev => ({
             ...prev,
             [name]: value
         }));
+    };
+
+    // ✅ Capturar geolocalización
+    const capturarGeolocalizacion = () => {
+        setCargandoGeolocalizacion(true);
+        setErrorGeolocalizacion('');
+
+        if (!navigator.geolocation) {
+            setErrorGeolocalizacion("Geolocalización no soportada por este navegador.");
+            setCargandoGeolocalizacion(false);
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                setNuevoCliente(prev => ({
+                    ...prev,
+                    latitud: position.coords.latitude,
+                    longitud: position.coords.longitude
+                }));
+                setCargandoGeolocalizacion(false);
+            },
+            (error) => {
+                console.error("Error al obtener geolocalización:", error);
+                setErrorGeolocalizacion("No se pudo obtener la ubicación. Verifique los permisos.");
+                setCargandoGeolocalizacion(false);
+            }
+        );
     };
 
     const handleCrearCliente = async () => {
@@ -64,34 +80,33 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
         }
 
         try {
+            // ✅ Enviar SIN numero_cliente (lo genera el backend)
             const clienteCreado = await API.post('/clientes', {
-                numero_cliente: generarNumeroCliente(),
                 razon_social: nuevoCliente.razonSocial,
                 direccion: nuevoCliente.direccion,
-                telefono: nuevoCliente.telefono,
-                id_localidad: nuevoCliente.idLocalidad,
+                telefono: nuevoCliente.telefono || null,
+                id_localidad: nuevoCliente.idLocalidad || null,
                 cuit: nuevoCliente.cuit,
-                saldo: 0
+                saldo: 0,
+                latitud: nuevoCliente.latitud,
+                longitud: nuevoCliente.longitud
             });
 
-            // Actualizar lista de clientes
             setClientes(prev => [...prev, clienteCreado.data]);
-            // Seleccionar el cliente recién creado
             setCliente(clienteCreado.data);
-            // ✅ ¡AVANZAR AL SIGUIENTE PASO!
             if (onClienteSeleccionado) {
                 onClienteSeleccionado(clienteCreado.data);
             }
-            // Ocultar formulario
             setMostrarFormulario(false);
-            // Resetear formulario
             setNuevoCliente({
                 razonSocial: '',
                 direccion: '',
                 telefono: '',
                 idLocalidad: '',
                 cuit: '',
-                saldo: 0
+                saldo: 0,
+                latitud: null,
+                longitud: null
             });
         } catch (error) {
             console.error("Error al crear cliente:", error);
@@ -101,7 +116,6 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
 
     const handleSeleccionarCliente = (clienteSeleccionado) => {
         setCliente(clienteSeleccionado);
-        // ✅ ¡AVANZAR AL SIGUIENTE PASO!
         if (onClienteSeleccionado) {
             onClienteSeleccionado(clienteSeleccionado);
         }
@@ -115,7 +129,9 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
             telefono: '',
             idLocalidad: '',
             cuit: '',
-            saldo: 0
+            saldo: 0,
+            latitud: null,
+            longitud: null
         });
     };
 
@@ -194,7 +210,7 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
                             <label>Número de Cliente:</label>
                             <input
                                 type="text"
-                                value={generarNumeroCliente()}
+                                value="Se generará automáticamente"
                                 readOnly
                                 style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px', backgroundColor: '#f8f9fa' }}
                             />
@@ -258,6 +274,36 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
                             />
                         </div>
                     </div>
+
+                    {/* ✅ Botón para capturar geolocalización */}
+                    <div style={{ marginTop: '1rem' }}>
+                        <button
+                            onClick={capturarGeolocalizacion}
+                            disabled={cargandoGeolocalizacion}
+                            style={{
+                                padding: '0.5rem 1rem',
+                                backgroundColor: cargandoGeolocalizacion ? '#6c757d' : '#28a745',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: cargandoGeolocalizacion ? 'not-allowed' : 'pointer',
+                                marginRight: '1rem'
+                            }}
+                        >
+                            {cargandoGeolocalizacion ? 'Obteniendo ubicación...' : '📍 Capturar Ubicación'}
+                        </button>
+                        {errorGeolocalizacion && (
+                            <span style={{ color: 'red', fontSize: '0.9rem' }}>
+                                {errorGeolocalizacion}
+                            </span>
+                        )}
+                        {nuevoCliente.latitud && nuevoCliente.longitud && (
+                            <span style={{ color: 'green', fontSize: '0.9rem', marginLeft: '1rem' }}>
+                                ✅ Ubicación capturada: {nuevoCliente.latitud.toFixed(4)}, {nuevoCliente.longitud.toFixed(4)}
+                            </span>
+                        )}
+                    </div>
+
                     <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
                         <button
                             onClick={handleCrearCliente}

@@ -1,0 +1,16 @@
+Qué sigue?
+Ahora que tienen una base sólida, podemos elegir qué funcionalidad implementar una continuación:
+
+1. 📧 Enviar el PDF por correo electrónico
+Automáticamente al confirmar el pedido.
+Una dirección configurable (cliente o vendedor).
+2. 📱 Enviar notificación por WhatsApp
+Usando la API oficial o servicios como Twilio.
+3. 👤 Implementar inicio de sesión de vendedores y administradores
+Con JWT y rutas protegidas.
+Panel de administración para gestionar productos, clientes, etc.
+4. 📊 Panel de informes y estadísticas
+Ventas por día, mes, cliente, producto.
+Exportar un Excel o PDF.
+5. 🖨️ Imprimir ticket de pedido en impresora técnica
+Ideal para pornos de venta física.

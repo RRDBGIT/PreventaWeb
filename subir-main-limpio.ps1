@@ -1,5 +1,5 @@
-# subir-main-limpio.ps1
-# Script para limpiar archivos grandes, aplicar gitignore y subir main al remoto
+# subir-main-filtrado.ps1
+# Script para limpiar archivos problemáticos, aplicar gitignore y subir main al remoto
 
 # Carpeta del proyecto
 $repoPath = "C:\PreventaWeb"
@@ -9,53 +9,22 @@ Set-Location $repoPath
 # 1. Crear / actualizar .gitignore
 # ======================
 $gitignoreContent = @"
-# Node.js / Frontend
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-pnpm-debug.log*
-
-# Build / Dist / Cache
+.cache/
 dist/
 build/
-.cache/
-.next/
-out/
-coverage/
-.tmp/
-
-# IDE / Editor
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Sistema operativo
-.DS_Store
-Thumbs.db
-
-# Logs
 *.log
-
-# Environment
 .env
-.env.local
-.env.*.local
-
-# Otros
-*.tgz
-*.gz
 "@
 
-$gitignorePath = Join-Path $repoPath ".gitignore"
-Set-Content -Path $gitignorePath -Value $gitignoreContent -Encoding UTF8
+Set-Content -Path ".gitignore" -Value $gitignoreContent -Encoding UTF8
 Write-Host "✅ .gitignore actualizado"
 
 # ======================
 # 2. Quitar archivos ignorados del índice
 # ======================
 git rm -r --cached node_modules 2>$null
-git rm -r --cached FrontEnd/node_modules/.cache 2>$null
+git rm -r --cached .cache 2>$null
 Write-Host "✅ node_modules y cache removidos del índice"
 
 # ======================
@@ -66,12 +35,16 @@ git commit -m "Commit automático: aplicar .gitignore y limpiar archivos grandes
 Write-Host "✅ Commit realizado"
 
 # ======================
-# 4. Limpiar archivos >100MB del historial
+# 4. Limpiar historial de archivos problemáticos
 # ======================
-Write-Host "⚠️ Eliminando archivos >100MB del historial..."
+Write-Host "⚠️ Limpiando historial de node_modules y cache..."
 git filter-branch --force --index-filter `
-    "git rm --cached --ignore-unmatch $(git rev-list --objects --all | ForEach-Object { $_ })" `
-    --prune-empty --tag-name-filter cat -- --all 2>$null
+"git rm -r --cached --ignore-unmatch node_modules" `
+--prune-empty --tag-name-filter cat -- --all
+
+git filter-branch --force --index-filter `
+"git rm -r --cached --ignore-unmatch .cache" `
+--prune-empty --tag-name-filter cat -- --all
 
 git reflog expire --expire=now --all
 git gc --prune=now --aggressive

@@ -1,3 +1,4 @@
+// FrontEnd/src/components/ReportePedidoPDF.jsx
 import React from 'react';
 import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
 
@@ -95,8 +96,8 @@ const ReportePedidoPDF = ({ pedido }) => (
                 <Text style={{ fontWeight: 'bold', fontSize: 12 }}>Detalles del Pedido:</Text>
                 {/* ✅ Formatear la fecha */}
                 <Text>Fecha de Vencimiento: {new Date(pedido.fechaVencimiento).toLocaleDateString()}</Text>
-                <Text>Forma de Pago: {pedido.formaPago}</Text>
-                <Text>Lista de Precios: {pedido.listaPrecios}</Text>
+                <Text>Forma de Pago: {pedido.formaPago}</Text> {/* ✅ Usar formaPago (snake_case) */}
+                <Text>Lista de Precios: {pedido.listaPrecios}</Text> {/* ✅ Usar listaPrecios (snake_case) */}
                 <Text>Vendedor: {pedido.vendedor || 'No especificado'}</Text>
             </View>
 

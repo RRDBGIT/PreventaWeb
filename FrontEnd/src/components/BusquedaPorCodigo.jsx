@@ -1,3 +1,5 @@
+// C:\PreventaWeb\FrontEnd\src\components\BusquedaPorCodigo.jsx
+
 import React, { useState } from 'react';
 import API from '../services/api';
 

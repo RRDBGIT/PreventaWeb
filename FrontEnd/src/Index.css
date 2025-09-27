@@ -1,0 +1,90 @@
+/* FrontEnd/src/index.css */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* ✅ RESPONSIVE: En móviles, apilar verticalmente */
+@media (max-width: 768px) {
+    .layout-pedido {
+        flex-direction: column !important;
+    }
+
+    .panel-formulario {
+        width: 100% !important;
+        border-right: none !important;
+        border-bottom: 1px solid #ddd !important;
+    }
+
+    .panel-carrito {
+        width: 100% !important;
+        border-left: none !important;
+        border-top: 1px solid #ddd !important;
+    }
+
+    .boton-responsive {
+        width: 100% !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .tabla-responsive {
+        font-size: 0.8rem !important;
+        display: block !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+    }
+
+    .tabla-responsive th,
+    .tabla-responsive td {
+        padding: 0.3rem !important;
+    }
+
+    .ocultar-en-movil {
+        display: none !important;
+    }
+
+    /* Ajustar botones de navegación */
+    .nav-buttons {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+    }
+
+    .nav-buttons button {
+        width: 100% !important;
+        margin-right: 0 !important;
+    }
+
+    /* ✅ Estilos específicos para el catálogo de productos */
+    .tabla-productos {
+        font-size: 0.85rem !important;
+        display: block !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        max-width: 100% !important;
+    }
+
+    .tabla-productos th,
+    .tabla-productos td {
+        padding: 0.4rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    .tabla-productos input[type="number"] {
+        width: 50px !important;
+        padding: 0.2rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    .tabla-productos button {
+        padding: 0.3rem 0.6rem !important;
+        font-size: 0.8rem !important;
+        font-weight: bold !important;
+    }
+}

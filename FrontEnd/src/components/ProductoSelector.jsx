@@ -1,5 +1,7 @@
+// FrontEnd/src/components/ProductoSelector.jsx
 import React, { useState, useEffect } from 'react';
 import API from '../services/api';
+import '../Index.css'; // ✅ Importar estilos globales
 
 const ProductoSelector = ({ listaPreciosId, onAdd }) => {
     const [productos, setProductos] = useState([]);
@@ -12,7 +14,6 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
 
         const cargarProductos = async () => {
             try {
-                // ✅ CORRECTO: Sin /api aquí, porque ya está en baseURL
                 const res = await API.get(`/productos?lista=${listaPreciosId}`);
                 const productosConPrecioNumerico = res.data.map(p => ({
                     ...p,
@@ -57,7 +58,7 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
     );
 
     return (
-        <div style={{ margin: '2rem 0', padding: '1rem', border: '1px solid #ddd', borderRadius: '8px' }}>
+        <div style={{ padding: '1rem' }}>
             <h3>📦 Cargar por Catálogo</h3>
 
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
@@ -65,7 +66,7 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
                     type="text"
                     placeholder="Buscar por código o descripción"
                     value={busqueda}
-                    onChange={(e) => setBusqueda(e.target.value)}
+                    onChange={(e) => setBusqueda(e.target.value.toUpperCase())}
                     style={{ flex: 1, padding: '0.5rem' }}
                 />
                 <button
@@ -85,14 +86,15 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
 
             {mostrarCatalogo && (
                 <div style={{ marginTop: '1rem', border: '1px solid #ccc', borderRadius: '4px', overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    {/* ✅ Tabla con clase CSS para scroll horizontal en móviles */}
+                    <table className="tabla-productos" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
                         <thead>
                             <tr style={{ backgroundColor: '#f2f2f2' }}>
-                                <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Código</th>
-                                <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Descripción</th>
-                                <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #ddd' }}>Precio</th>
-                                <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #ddd' }}>Cantidad</th>
-                                <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #ddd' }}>Acción</th>
+                                <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd', fontSize: '0.9rem' }}>Código</th>
+                                <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd', fontSize: '0.9rem' }}>Descripción</th>
+                                <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #ddd', fontSize: '0.9rem' }}>Precio</th>
+                                <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #ddd', fontSize: '0.9rem', width: '80px' }}>Cant</th> {/* ✅ Nombre cambiado a "Cant" y ancho reducido */}
+                                <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #ddd', fontSize: '0.9rem', width: '60px' }}></th> {/* ✅ Sin nombre, solo el botón "+" */}
                             </tr>
                         </thead>
                         <tbody>
@@ -101,16 +103,16 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
                                     <td colSpan="5" style={{ padding: '20px', textAlign: 'center', fontStyle: 'italic' }}>
                                         {busqueda 
                                             ? `No se encontraron productos que coincidan con "${busqueda}"`
-                                            : "No hay productos disponibles en esta lista de precios."
+                                            : "No hay productos disponibles en esta lista de precios. Verifique la configuración en la base de datos o el ID de la lista."
                                         }
                                     </td>
                                 </tr>
                             ) : (
                                 filtrados.map(p => (
                                     <tr key={p.IdProducto} style={{ borderBottom: '1px solid #eee' }}>
-                                        <td style={{ padding: '12px', border: '1px solid #ddd' }}>{p.Codigo}</td>
-                                        <td style={{ padding: '12px', border: '1px solid #ddd' }}>{p.Descripcion}</td>
-                                        <td style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'right' }}>
+                                        <td style={{ padding: '12px', border: '1px solid #ddd', fontSize: '0.85rem' }}>{p.Codigo}</td>
+                                        <td style={{ padding: '12px', border: '1px solid #ddd', fontSize: '0.85rem' }}>{p.Descripcion}</td>
+                                        <td style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'right', fontSize: '0.85rem' }}>
                                             ${parseFloat(p.Precio).toFixed(2)}
                                         </td>
                                         <td style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'center' }}>
@@ -119,7 +121,7 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
                                                 min="1"
                                                 value={cantidadMap[p.IdProducto] || 1}
                                                 onChange={(e) => handleCantidadChange(p.IdProducto, e.target.value)}
-                                                style={{ width: '60px', padding: '4px', textAlign: 'center' }}
+                                                style={{ width: '50px', padding: '4px', textAlign: 'center', fontSize: '0.85rem' }}
                                             />
                                         </td>
                                         <td style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'center' }}>
@@ -131,10 +133,12 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
                                                     color: 'white',
                                                     border: 'none',
                                                     borderRadius: '4px',
-                                                    cursor: 'pointer'
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.85rem',
+                                                    fontWeight: 'bold'
                                                 }}
                                             >
-                                                ➕ Agregar
+                                                +
                                             </button>
                                         </td>
                                     </tr>

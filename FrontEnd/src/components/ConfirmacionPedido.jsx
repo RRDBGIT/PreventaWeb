@@ -1,18 +1,20 @@
+// FrontEnd/src/components/ConfirmacionPedido.jsx
 import React, { useState } from 'react';
 import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
-import ReportePedidoPDF from './ReportePedidoPDF'; // Asegúrate de que la ruta sea correcta
+import ReportePedidoPDF from './ReportePedidoPDF';
+import '../Index.css'; // ✅ Importar estilos globales
 
-const ConfirmacionPedido = ({
-    // carrito,
-    // total,
-    // cliente,
-    // fechaVencimiento,
-    // formaPago,
+const ConfirmacionPedido = ({ 
+    carrito, 
+    total, 
+    cliente, 
+    fechaVencimiento, 
+    formaPago, 
     onConfirmar,
     guardando,
-    // numeroPedido,
-    // mostrarPDF,
-    // onCerrarPDF,
+    numeroPedido,
+    mostrarPDF,
+    onCerrarPDF,
     pedidoCreado // ✅ Recibir el pedido completo
 }) => {
     const [fechaEntrega, setFechaEntrega] = useState('');
@@ -37,7 +39,7 @@ const ConfirmacionPedido = ({
     };
 
     // ✅ Si se recibió un pedido creado, mostrar el PDF
-    if (pedidoCreado) {
+    if (mostrarPDF && pedidoCreado) {
         // Crear el objeto datosParaPDF con la estructura esperada por ReportePedidoPDF
         const datosParaPDF = {
             numeroPedido: pedidoCreado.numero_pedido,
@@ -51,7 +53,7 @@ const ConfirmacionPedido = ({
             fechaVencimiento: pedidoCreado.fecha_vencimiento,
             formaPago: pedidoCreado.forma_pago, // ✅ Del JOIN con FormasDePago
             listaPrecios: pedidoCreado.lista_precios, // ✅ Del JOIN con ListasDePrecios
-            carrito: pedidoCreado.carrito_items || [], // Asegúrate de que el backend lo envíe o pásalo desde Pedido.jsx
+            carrito: pedidoCreado.carrito_items || carrito, // Asegúrate de que el backend lo envíe o pásalo desde Pedido.jsx
             total: pedidoCreado.total,
 	    vendedor: pedidoCreado.nombre_vendedor // ✅ Pasar el nombre del vendedor
             // Puedes agregar más datos aquí si los necesitas en el PDF
@@ -88,7 +90,7 @@ const ConfirmacionPedido = ({
                             }
                         </PDFDownloadLink>
                         <button
-                            onClick={() => window.location.reload()} // ✅ Recargar para reiniciar el flujo
+                            onClick={onCerrarPDF}
                             style={{
                                 marginLeft: '1rem',
                                 padding: '0.5rem 1rem',
@@ -129,12 +131,11 @@ const ConfirmacionPedido = ({
             <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>📄 Confirmación de Pedido</h2>
 
             {/* Aquí puedes mostrar un resumen básico si lo deseas, o dejar solo el formulario */}
-            {/* <div style={{ backgroundColor: '#f8f9fa', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem' }}>
+            <div style={{ backgroundColor: '#f8f9fa', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem' }}>
                 <p><strong>Cliente:</strong> {cliente?.razon_social}</p>
-                <p><strong>Fecha de Vencimiento:</strong> {fechaVencimiento}</p>
-                <p><strong>Forma de Pago:</strong> {formaPago}</p>
-                <p><strong>Total:</strong> ${total.toFixed(2)}</p>
-            </div> */}
+                <p>{cliente?.direccion} - {cliente?.localidad_nombre}</p>
+                <p><strong>CUIT:</strong> {cliente?.cuit}</p>
+            </div>
 
             <form onSubmit={handleSubmit}>
                 <div style={{ marginBottom: '1rem' }}>
@@ -192,7 +193,7 @@ const ConfirmacionPedido = ({
                             cursor: guardando ? 'not-allowed' : 'pointer'
                         }}
                     >
-                        {guardando ? 'Guardando...' : '✅ Confirmar Pedido'}
+                        {guardando ? 'Guardando pedido...' : '✅ Confirmar Pedido'}
                     </button>
                 </div>
             </form>

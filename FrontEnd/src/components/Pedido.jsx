@@ -1,3 +1,4 @@
+// FrontEnd/src/components/Pedido.jsx
 import React, { useState, useEffect } from 'react';
 import API from '../services/api';
 import Carrito from './Carrito';
@@ -5,6 +6,7 @@ import BusquedaPorCodigo from './BusquedaPorCodigo';
 import ProductoSelector from './ProductoSelector';
 import ConfirmacionPedido from './ConfirmacionPedido';
 import ClienteSelector from './ClienteSelector';
+import '../Index.css'; // ✅ Importar estilos globales
 
 const Pedido = () => {
     const [paso, setPaso] = useState('cliente'); // 'cliente', 'pedido', 'confirmacion'
@@ -17,9 +19,9 @@ const Pedido = () => {
     const [fechaVencimiento, setFechaVencimiento] = useState('');
     // ✅ Estados adicionales para manejar la creación del pedido
     const [guardandoPedido, setGuardandoPedido] = useState(false);
-    // const [numeroPedidoCreado, setNumeroPedidoCreado] = useState(null); // ❌ Ya no se usa directamente
+    const [numeroPedidoCreado, setNumeroPedidoCreado] = useState(null);
     const [pedidoCreado, setPedidoCreado] = useState(null); // ✅ Nuevo estado para el pedido completo
-    // const [mostrarPDF, setMostrarPDF] = useState(false); // ❌ Ya no se usa directamente
+    const [mostrarPDF, setMostrarPDF] = useState(false);
 
     useEffect(() => {
         const cargarCatalogos = async () => {
@@ -79,8 +81,8 @@ const Pedido = () => {
         const idVendedor = usuario?.id;
 
         setGuardandoPedido(true);
-        // setNumeroPedidoCreado(null); // ❌ Ya no se usa
-        // setMostrarPDF(false); // ❌ Ya no se usa
+        setNumeroPedidoCreado(null);
+        setMostrarPDF(false);
         setPedidoCreado(null); // ✅ Resetear pedido anterior
 
         try {
@@ -96,9 +98,9 @@ const Pedido = () => {
             });
 
             const pedidoCreado = response.data;
-            // setNumeroPedidoCreado(pedidoCreado.numero_pedido); // ❌ Ya no se usa
-            // setMostrarPDF(true); // ❌ Ya no se usa
+            setNumeroPedidoCreado(pedidoCreado.numero_pedido);
             setPedidoCreado(pedidoCreado); // ✅ Guardar el pedido completo
+            setMostrarPDF(true); // ✅ Activar visualización del PDF
 
             console.log("✅ Pedido creado con éxito:", pedidoCreado.numero_pedido);
 
@@ -112,8 +114,8 @@ const Pedido = () => {
 
     // ✅ Función para reiniciar el flujo después de crear el pedido
     const reiniciarFlujo = () => {
-        // setMostrarPDF(false); // ❌ Ya no se usa
-        // setNumeroPedidoCreado(null); // ❌ Ya no se usa
+        setMostrarPDF(false);
+        setNumeroPedidoCreado(null);
         setPedidoCreado(null); // ✅ Resetear pedido
         setPaso('cliente');
         setCliente(null);
@@ -125,9 +127,9 @@ const Pedido = () => {
     };
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Arial' }}>
+        <div className="layout-pedido" style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Arial' }}>
             {/* Panel izquierdo: Formulario con tabs */}
-            <div style={{ flex: 2, padding: '2rem', backgroundColor: '#f8f9fa' }}>
+            <div className="panel-formulario" style={{ flex: 2, padding: '2rem', backgroundColor: '#f8f9fa' }}>
                 <div style={{ display: 'flex', borderBottom: '2px solid #007bff', marginBottom: '1rem' }}>
                     <button
                         onClick={() => setPaso('cliente')}
@@ -256,25 +258,26 @@ const Pedido = () => {
                 {/* Paso Confirmación */}
                 {paso === 'confirmacion' && (
                     <ConfirmacionPedido
-                        // carrito={carrito}
-                        // total={total}
-                        // cliente={cliente}
-                        // fechaVencimiento={fechaVencimiento}
-                        // formaPago={formasPago.find(fp => fp.IdPago == formaPago)?.Descripcion || ''} // ❌ Ya no se pasa así
+                        carrito={carrito}
+                        total={total}
+                        cliente={cliente}
+                        fechaVencimiento={fechaVencimiento}
+                        formaPago={formasPago.find(fp => fp.IdPago == formaPago)?.Descripcion || ''}
                         onConfirmar={confirmarPedido} // ✅ Pasar la función corregida
                         guardando={guardandoPedido} // ✅ Pasar estado de carga
-                        // numeroPedido={numeroPedidoCreado} // ❌ Ya no se pasa así
-                        // mostrarPDF={mostrarPDF} // ❌ Ya no se pasa así
-                        // onCerrarPDF={reiniciarFlujo} // ❌ Ya no se pasa así
+                        numeroPedido={numeroPedidoCreado} // ✅ Pasar número de pedido creado
+                        mostrarPDF={mostrarPDF} // ✅ Pasar estado para mostrar PDF
+                        onCerrarPDF={reiniciarFlujo} // ✅ Pasar función para cerrar PDF y reiniciar
                         pedidoCreado={pedidoCreado} // ✅ Pasar el pedido creado completo
                     />
                 )}
 
                 {/* Botones de navegación */}
-                <div style={{ marginTop: '2rem', textAlign: 'right' }}>
+                <div className="nav-buttons" style={{ marginTop: '2rem', textAlign: 'right', display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
                     {paso !== 'cliente' && (
                         <button
                             onClick={anterior}
+                            className="boton-responsive"
                             style={{ padding: '0.7rem 2rem', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', marginRight: '1rem' }}
                         >
                             ← Anterior
@@ -283,6 +286,7 @@ const Pedido = () => {
                     {paso !== 'confirmacion' && (
                         <button
                             onClick={siguiente}
+                            className="boton-responsive"
                             style={{ padding: '0.7rem 2rem', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px' }}
                         >
                             Siguiente →
@@ -292,12 +296,13 @@ const Pedido = () => {
             </div>
 
             {/* Panel derecho: Carrito fijo */}
-            <div style={{ flex: 1, backgroundColor: 'white', borderLeft: '1px solid #ddd', padding: '1rem' }}>
+            <div className="panel-carrito" style={{ flex: 1, backgroundColor: 'white', borderLeft: '1px solid #ddd', padding: '1rem' }}>
                 <h3 style={{ textAlign: 'center', borderBottom: '1px solid #eee', paddingBottom: '0.5rem' }}>🛒 Carrito</h3>
                 <Carrito items={carrito} onRemove={eliminarDelCarrito} total={total} />
                 {carrito.length > 0 && paso !== 'confirmacion' && (
                     <button
                         onClick={() => setPaso('confirmacion')}
+                        className="boton-responsive"
                         style={{
                             padding: '0.7rem 2rem',
                             fontSize: '1.1rem',

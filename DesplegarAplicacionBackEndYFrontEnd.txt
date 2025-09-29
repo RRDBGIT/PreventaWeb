@@ -55,3 +55,57 @@ JWT_SECRET: mi_secreto_super_seguro_2025
 d) Despliega
 → Render te dará una URL como:
 https://preventaweb-api.onrender.com
+
+Luego para el frontEnd en hostinger
+1. en C:\preventaWeb correr npm run build
+esto genera una carpeta build para produccion, subir los archivos del raiz, index.html,*.*,
+2.lugo subir la carpeta statics a public de hostinger, renombrar default.php a default_bck.php, asegurarse que la ruta en el
+api del frontend apunte al servidor correcto ejemplo:baseURL: 'https://preventaweb-api.onrender.com/api', 
+    timeout: 10000. este caso es para render.com
+3. si se desea actualizar con otro build mas nuevo borrar todos los archivos y subir de nuevo
+
+✅ Solución inmediata
+1. ✅ Recompila tu frontend
+En tu PC local:
+
+bash
+
+
+1
+2
+cd FrontEnd
+npm run build
+→ Esto genera una nueva carpeta build/ con archivos con nuevos hashes.
+
+2. ✅ Sube TODO el contenido de build/ a Hostinger
+Abre File Manager en Hostinger.
+Ve a:
+
+
+1
+public_html/
+Elimina todos los archivos y carpetas existentes:
+static/
+index.html
+manifest.json
+etc.
+Copia todos los archivos de tu carpeta local FrontEnd/build/ a public_html/ en Hostinger.
+3. ✅ Verifica que el index.html apunte al hash correcto
+Abre public_html/index.html en Hostinger y verifica que tenga:
+
+html
+
+
+1
+<script src="/static/js/main.053f2c2a.js"></script>
+→ No debe tener main.df74127c.js.
+
+🔄 Reinicia tu frontend
+bash
+
+
+1
+2
+Ctrl + C
+npm start
+✅ Con estos cambios, el error 404 desaparecerá y tu aplicación cargará correctamente.

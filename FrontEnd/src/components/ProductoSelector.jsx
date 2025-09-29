@@ -87,20 +87,20 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
             {mostrarCatalogo && (
                 <div style={{ marginTop: '1rem', border: '1px solid #ccc', borderRadius: '4px', overflowX: 'auto' }}>
                     {/* ✅ Tabla con clase CSS para scroll horizontal en móviles */}
-                    <table className="tabla-productos" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+                    <table className="tabla-productos" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '500px' }}>
                         <thead>
                             <tr style={{ backgroundColor: '#f2f2f2' }}>
-                                <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd', fontSize: '0.9rem' }}>Código</th>
+                                {/* ❌ Columna "Código" eliminada para mejor vista en móviles */}
                                 <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd', fontSize: '0.9rem' }}>Descripción</th>
                                 <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #ddd', fontSize: '0.9rem' }}>Precio</th>
-                                <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #ddd', fontSize: '0.9rem', width: '80px' }}>Cant</th> {/* ✅ Nombre cambiado a "Cant" y ancho reducido */}
-                                <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #ddd', fontSize: '0.9rem', width: '60px' }}></th> {/* ✅ Sin nombre, solo el botón "+" */}
+                                <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #ddd', fontSize: '0.9rem', width: '80px' }}>Cant</th>
+                                <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #ddd', fontSize: '0.9rem', width: '60px' }}></th>
                             </tr>
                         </thead>
                         <tbody>
                             {filtrados.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" style={{ padding: '20px', textAlign: 'center', fontStyle: 'italic' }}>
+                                    <td colSpan="4" style={{ padding: '20px', textAlign: 'center', fontStyle: 'italic' }}>
                                         {busqueda 
                                             ? `No se encontraron productos que coincidan con "${busqueda}"`
                                             : "No hay productos disponibles en esta lista de precios. Verifique la configuración en la base de datos o el ID de la lista."
@@ -110,7 +110,7 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
                             ) : (
                                 filtrados.map(p => (
                                     <tr key={p.IdProducto} style={{ borderBottom: '1px solid #eee' }}>
-                                        <td style={{ padding: '12px', border: '1px solid #ddd', fontSize: '0.85rem' }}>{p.Codigo}</td>
+                                        {/* ❌ Columna "Código" eliminada */}
                                         <td style={{ padding: '12px', border: '1px solid #ddd', fontSize: '0.85rem' }}>{p.Descripcion}</td>
                                         <td style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'right', fontSize: '0.85rem' }}>
                                             ${parseFloat(p.Precio).toFixed(2)}

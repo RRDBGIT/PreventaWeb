@@ -10,26 +10,28 @@ const BusquedaPorCodigo = ({ listaPreciosId, onAdd }) => {
     const [error, setError] = useState('');
 
     const handleBuscar = async () => {
-        if (!codigo || !listaPreciosId) {
-            setError('Ingrese código y seleccione lista de precios');
-            return;
-        }
+    if (!codigo || !listaPreciosId) {
+        setError('Ingrese código y seleccione lista de precios');
+        return;
+    }
 
-        try {
-            // ✅ CORRECTO: Sin /api aquí
-            const res = await API.get(`/productos?lista=${listaPreciosId}`);
-            const prod = res.data.find(p => p.Codigo === codigo);
-            if (prod) {
-                setProducto(prod);
-                setError('');
-            } else {
-                setProducto(null);
-                setError('Producto no encontrado');
-            }
-        } catch (error) {
-            console.error("Error en búsqueda por código:", error);
-            setError('Error al buscar producto. Verifique conexión o lista seleccionada.');
+    try {
+        // ✅ Enviar 'buscar' en lugar de 'codigo' para permitir búsqueda por nombre
+        const res = await API.get(`/productos?lista=${listaPreciosId}&buscar=${encodeURIComponent(codigo)}`);
+        
+        if (res.data.length > 0) {
+            // ✅ Tomar el primer resultado si hay varios
+            const prod = res.data[0];
+            setProducto(prod);
+            setError('');
+        } else {
+            setProducto(null);
+            setError('Producto no encontrado');
         }
+    } catch (error) {
+        console.error("Error en búsqueda por código:", error);
+        setError('Error al buscar producto. Verifique conexión o lista seleccionada.');
+    }
     };
 
     const handleAdd = () => {

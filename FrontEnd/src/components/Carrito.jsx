@@ -1,5 +1,4 @@
-// C:\PreventaWeb\FrontEnd\src\components\Carrito.jsx
-
+// FrontEnd/src/components/Carrito.jsx
 import React from 'react';
 
 const Carrito = ({ items, onRemove, total }) => {

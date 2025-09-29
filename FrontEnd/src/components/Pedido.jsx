@@ -53,6 +53,13 @@ const Pedido = () => {
         setCarrito(carrito.filter(item => item.id !== id));
     };
 
+    // ✅ Función para vaciar el carrito
+    const vaciarCarrito = () => {
+        if (window.confirm("¿Está seguro de que desea vaciar el carrito?")) {
+            setCarrito([]);
+        }
+    };
+
     const total = carrito.reduce((sum, item) => sum + item.importe, 0);
 
     const siguiente = () => {
@@ -105,7 +112,7 @@ const Pedido = () => {
             console.log("✅ Pedido creado con éxito:", pedidoCreado.numero_pedido);
 
         } catch (error) {
-            console.error("❌ Error al crear pedido:", error);
+            console.error("❌ ERROR al crear pedido:", error);
             alert("Error al crear el pedido. Por favor, inténtelo de nuevo.");
         } finally {
             setGuardandoPedido(false);
@@ -124,6 +131,13 @@ const Pedido = () => {
         setListaPrecios('');
         setFormaPago('');
         setFechaVencimiento('');
+    };
+
+    // ✅ Función para manejar la selección de cliente
+    const handleClienteSeleccionado = (clienteSeleccionado) => {
+        setCliente(clienteSeleccionado);
+        // ✅ Pasar automáticamente a la pestaña de pedidos
+        setPaso('pedido');
     };
 
     return (
@@ -177,11 +191,33 @@ const Pedido = () => {
                 </div>
 
                 {/* Paso Cliente */}
-                {paso === 'cliente' && <ClienteSelector cliente={cliente} setCliente={setCliente} />}
+                {paso === 'cliente' && (
+                    <ClienteSelector 
+                        cliente={cliente} 
+                        setCliente={setCliente} 
+                        onClienteSeleccionado={handleClienteSeleccionado} // ✅ Pasar la función corregida
+                    />
+                )}
 
                 {/* Paso Pedido */}
                 {paso === 'pedido' && (
                     <div>
+                        {/* ✅ Label con la descripción del cliente */}
+                        {cliente && (
+                            <div style={{ 
+                                backgroundColor: '#e9f7ef', 
+                                padding: '1rem', 
+                                borderRadius: '8px', 
+                                marginBottom: '1rem',
+                                borderLeft: '4px solid #28a745'
+                            }}>
+                                <h4>👤 Cliente Seleccionado</h4>
+                                <p><strong>{cliente.razon_social}</strong></p>
+                                <p>{cliente.direccion} - {cliente.localidad_nombre}</p>
+                                <p><strong>CUIT:</strong> {cliente.cuit}</p>
+                            </div>
+                        )}
+
                         <div style={{ marginBottom: '1rem' }}>
                             <label>📅 Fecha de Vencimiento: </label>
                             <input
@@ -300,23 +336,42 @@ const Pedido = () => {
                 <h3 style={{ textAlign: 'center', borderBottom: '1px solid #eee', paddingBottom: '0.5rem' }}>🛒 Carrito</h3>
                 <Carrito items={carrito} onRemove={eliminarDelCarrito} total={total} />
                 {carrito.length > 0 && paso !== 'confirmacion' && (
-                    <button
-                        onClick={() => setPaso('confirmacion')}
-                        className="boton-responsive"
-                        style={{
-                            padding: '0.7rem 2rem',
-                            fontSize: '1.1rem',
-                            backgroundColor: '#ffc107',
-                            color: 'black',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            marginTop: '1rem',
-                            width: '100%'
-                        }}
-                    >
-                        📄 Ver Contenido / Confirmar
-                    </button>
+                    <>
+                        <button
+                            onClick={vaciarCarrito}
+                            className="boton-responsive"
+                            style={{
+                                padding: '0.7rem 2rem',
+                                fontSize: '1.1rem',
+                                backgroundColor: '#dc3545',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                marginTop: '1rem',
+                                width: '100%'
+                            }}
+                        >
+                            🗑️ Vaciar Carrito
+                        </button>
+                        <button
+                            onClick={() => setPaso('confirmacion')}
+                            className="boton-responsive"
+                            style={{
+                                padding: '0.7rem 2rem',
+                                fontSize: '1.1rem',
+                                backgroundColor: '#ffc107',
+                                color: 'black',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                marginTop: '1rem',
+                                width: '100%'
+                            }}
+                        >
+                            📄 Ver Contenido / Confirmar
+                        </button>
+                    </>
                 )}
             </div>
         </div>

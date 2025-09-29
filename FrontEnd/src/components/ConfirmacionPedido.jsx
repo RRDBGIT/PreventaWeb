@@ -61,9 +61,9 @@ const ConfirmacionPedido = ({
 
         return (
             <div style={{ padding: '1rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                <div className="pdf-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
                     <h2>📄 Pedido Confirmado</h2>
-                    <div>
+                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                         <PDFDownloadLink
                             document={<ReportePedidoPDF pedido={datosParaPDF} />}
                             fileName={`pedido_${pedidoCreado.numero_pedido}.pdf`}
@@ -75,6 +75,7 @@ const ConfirmacionPedido = ({
                                     </button>
                                 ) : (
                                     <button
+                                        className="boton-responsive"
                                         style={{
                                             padding: '0.5rem 1rem',
                                             backgroundColor: '#28a745',
@@ -91,8 +92,8 @@ const ConfirmacionPedido = ({
                         </PDFDownloadLink>
                         <button
                             onClick={onCerrarPDF}
+                            className="boton-responsive"
                             style={{
-                                marginLeft: '1rem',
                                 padding: '0.5rem 1rem',
                                 backgroundColor: '#007bff',
                                 color: 'white',
@@ -105,11 +106,59 @@ const ConfirmacionPedido = ({
                         </button>
                     </div>
                 </div>
-                <div style={{ height: 'calc(100vh - 150px)', border: '1px solid #ddd', borderRadius: '8px' }}>
+
+                {/* ✅ Mostrar PDF solo en escritorio, mensaje en móviles */}
+                <div className="pdf-container" style={{ 
+                    height: 'calc(100vh - 150px)', 
+                    border: '1px solid #ddd', 
+                    borderRadius: '8px',
+                    display: window.innerWidth > 768 ? 'block' : 'none' // ✅ Ocultar en móviles
+                }}>
                     <PDFViewer width="100%" height="100%">
                         <ReportePedidoPDF pedido={datosParaPDF} />
                     </PDFViewer>
                 </div>
+
+                {/* ✅ Mensaje para móviles */}
+                {window.innerWidth <= 768 && (
+                    <div style={{ 
+                        textAlign: 'center', 
+                        padding: '2rem', 
+                        backgroundColor: '#fff3cd', 
+                        borderRadius: '8px',
+                        border: '1px solid #ffeaa7'
+                    }}>
+                        <h3>📱 Vista previa no disponible en móviles</h3>
+                        <p>Haga clic en "💾 Descargar PDF" para ver el pedido.</p>
+                        <div style={{ marginTop: '1rem' }}>
+                            <PDFDownloadLink
+                                document={<ReportePedidoPDF pedido={datosParaPDF} />}
+                                fileName={`pedido_${pedidoCreado.numero_pedido}.pdf`}
+                            >
+                                {({ loading }) =>
+                                    loading ? (
+                                        <button style={{ padding: '0.5rem 1rem', backgroundColor: '#ffc107' }}>
+                                            Generando PDF...
+                                        </button>
+                                    ) : (
+                                        <button
+                                            style={{
+                                                padding: '0.5rem 1rem',
+                                                backgroundColor: '#28a745',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            💾 Descargar PDF
+                                        </button>
+                                    )
+                                }
+                            </PDFDownloadLink>
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }
@@ -135,6 +184,8 @@ const ConfirmacionPedido = ({
                 <p><strong>Cliente:</strong> {cliente?.razon_social}</p>
                 <p>{cliente?.direccion} - {cliente?.localidad_nombre}</p>
                 <p><strong>CUIT:</strong> {cliente?.cuit}</p>
+                <p><strong>Forma de Pago:</strong> {formaPago}</p>
+                <p><strong>Total:</strong> ${total.toFixed(2)}</p>
             </div>
 
             <form onSubmit={handleSubmit}>
@@ -183,6 +234,7 @@ const ConfirmacionPedido = ({
                     <button
                         type="submit"
                         disabled={guardando}
+                        className="boton-responsive"
                         style={{
                             padding: '0.7rem 2rem',
                             fontSize: '1.1rem',

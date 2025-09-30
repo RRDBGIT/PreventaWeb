@@ -97,6 +97,7 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
     try {
       if (editando) {
         // ✅ Actualizar cliente existente
+        console.log('Editando cliente con ID:', nuevoCliente.id_cliente);
         const clienteActualizado = await API.put(`/clientes/${nuevoCliente.id_cliente}`, {
           razon_social: nuevoCliente.razonSocial,
           direccion: nuevoCliente.direccion,
@@ -108,11 +109,12 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
           longitud: nuevoCliente.longitud
         });
 
-        setClientes(prev => prev.map(c => c.id_cliente === clienteActualizado.data.id_cliente ? clienteActualizado.data : c));
+        // 🔁 Recargar la lista de clientes para asegurar actualización visual
+        const clientesRes = await API.get('/clientes');
+        setClientes(clientesRes.data);
+
         setCliente(clienteActualizado.data);
-        if (onClienteSeleccionado) {
-          onClienteSeleccionado(clienteActualizado.data);
-        }
+        // ❌ No llamamos a onClienteSeleccionado aquí, para evitar cambio de pestaña
         alert("Cliente actualizado exitosamente.");
       } else {
         // ✅ Crear nuevo cliente
@@ -127,11 +129,12 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
           longitud: nuevoCliente.longitud
         });
 
-        setClientes(prev => [...prev, clienteCreado.data]);
+        // 🔁 Recargar la lista de clientes para asegurar actualización visual
+        const clientesRes = await API.get('/clientes');
+        setClientes(clientesRes.data);
+
         setCliente(clienteCreado.data);
-        if (onClienteSeleccionado) {
-          onClienteSeleccionado(clienteCreado.data);
-        }
+        // ❌ No llamamos a onClienteSeleccionado aquí, para evitar cambio de pestaña
         alert("Cliente creado exitosamente.");
       }
 
@@ -156,17 +159,28 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
   const handleSeleccionarCliente = (clienteSeleccionado) => {
     setCliente(clienteSeleccionado);
     if (onClienteSeleccionado) {
-      onClienteSeleccionado(clienteSeleccionado);
+      onClienteSeleccionado(clienteSeleccionado); // ✅ Solo aquí se llama
     }
   };
 
-  const iniciarEdicion = (cliente) => {
+    const iniciarEdicion = (cliente) => {
+    console.log('Cliente recibido en iniciarEdicion:', cliente);
+
+    // ✅ Buscar el ID de la localidad en la lista de localidades cargadas
+    let idLocalidadCliente = '';
+    if (cliente.localidad_nombre) {
+      const localidadEncontrada = localidades.find(loc => loc.nombre === cliente.localidad_nombre);
+      if (localidadEncontrada) {
+        idLocalidadCliente = localidadEncontrada.id.toString();
+      }
+    }
+
     setNuevoCliente({
-      id_cliente: cliente.id_cliente,
+      id_cliente: cliente.IdCliente || cliente.id_cliente || cliente.id,
       razonSocial: cliente.razon_social,
       direccion: cliente.direccion,
       telefono: cliente.telefono || '',
-      idLocalidad: cliente.id_localidad?.toString() || '',
+      idLocalidad: idLocalidadCliente, // ← Usamos el ID encontrado
       cuit: cliente.cuit,
       saldo: cliente.saldo,
       latitud: cliente.latitud,
@@ -175,7 +189,6 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
     setEditando(true);
     setMostrarFormulario(true);
   };
-
   const verEnMapa = (cliente) => {
     if (cliente.latitud && cliente.longitud) {
       setClienteMapa(cliente);
@@ -229,7 +242,7 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
         ) : (
           clientesFiltrados.map(c => (
             <div
-              key={c.id_cliente}
+              key={c.id_cliente} // ← El key sigue siendo el id del cliente
               style={{
                 padding: '0.75rem',
                 borderBottom: '1px solid #eee',
@@ -355,7 +368,7 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
               <label>Localidad:</label>
               <select
                 name="idLocalidad"
-                value={nuevoCliente.idLocalidad}
+                value={nuevoCliente.idLocalidad} // ✅ Aquí se carga la localidad actual del cliente en edición o creación
                 onChange={handleInputChange}
                 required
                 style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}

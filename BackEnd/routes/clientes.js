@@ -11,7 +11,7 @@ router.post('/', crearCliente);
 
 // 🔴 Ruta para obtener clientes con geolocalización
 router.get('/ubicacion', async (req, res) => {
-  const db = require('../config/db'); // Ajusta la ruta según tu estructura
+  const db = require('../models/db'); // ✅ Corregido: ruta correcta
   try {
     const query = `
       SELECT 
@@ -34,7 +34,7 @@ router.get('/ubicacion', async (req, res) => {
 // 🔴 Ruta para obtener un cliente por ID
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
-  const db = require('../config/db');
+  const db = require('../models/db'); // ✅ Corregido: ruta correcta
   try {
     const query = `
       SELECT 
@@ -77,7 +77,7 @@ router.put('/:id', async (req, res) => {
     longitud 
   } = req.body;
 
-  const db = require('../config/db');
+  const db = require('../models/db'); // ✅ Corregido: ruta correcta
 
   try {
     const query = `

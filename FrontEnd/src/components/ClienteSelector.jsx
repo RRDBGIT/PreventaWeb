@@ -95,7 +95,7 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
     }
 
     try {
-      if (editando) {
+        if (editando) {
         // ✅ Actualizar cliente existente
         console.log('Editando cliente con ID:', nuevoCliente.id_cliente);
         const clienteActualizado = await API.put(`/clientes/${nuevoCliente.id_cliente}`, {
@@ -117,26 +117,10 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
         // ❌ No llamamos a onClienteSeleccionado aquí, para evitar cambio de pestaña
         alert("Cliente actualizado exitosamente.");
       } else {
-        // ✅ Crear nuevo cliente
-        const clienteCreado = await API.post('/clientes', {
-          razon_social: nuevoCliente.razonSocial,
-          direccion: nuevoCliente.direccion,
-          telefono: nuevoCliente.telefono || null,
-          id_localidad: nuevoCliente.idLocalidad || null,
-          cuit: nuevoCliente.cuit,
-          saldo: 0,
-          latitud: nuevoCliente.latitud,
-          longitud: nuevoCliente.longitud
-        });
-
-        // 🔁 Recargar la lista de clientes para asegurar actualización visual
-        const clientesRes = await API.get('/clientes');
-        setClientes(clientesRes.data);
-
-        setCliente(clienteCreado.data);
-        // ❌ No llamamos a onClienteSeleccionado aquí, para evitar cambio de pestaña
-        alert("Cliente creado exitosamente.");
+        // ...
       }
+  
+     
 
       setMostrarFormulario(false);
       setEditando(false);
@@ -189,6 +173,8 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
     setEditando(true);
     setMostrarFormulario(true);
   };
+  
+  // ✅ Función para ver en mapa
   const verEnMapa = (cliente) => {
     if (cliente.latitud && cliente.longitud) {
       setClienteMapa(cliente);
@@ -219,6 +205,17 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
     const coincideRazon = cliente.razon_social?.toLowerCase().includes(busqueda.toLowerCase());
     return coincideNumero || coincideRazon;
   });
+
+  // ✅ Función para generar la URL de Google Maps con coordenadas
+  const generarUrlGoogleMapsConCoordenadas = (latitud, longitud) => {
+    if (latitud == null || longitud == null || isNaN(latitud) || isNaN(longitud)) {
+      console.error("Coordenadas inválidas para generar la URL de Google Maps:", latitud, longitud);
+      return null;
+    }
+    const lat = parseFloat(latitud).toFixed(6);
+    const lng = parseFloat(longitud).toFixed(6);
+    return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  };
 
   return (
     <div style={{ padding: '1rem' }}>
@@ -503,7 +500,26 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
               <Marker position={[clienteMapa.latitud, clienteMapa.longitud]}>
                 <Popup>
                   <b>{clienteMapa.razon_social}</b><br />
-                  {clienteMapa.direccion}
+                  {clienteMapa.direccion}<br />
+                  {/* ✅ Botón para abrir en Google Maps */}
+                  <a
+                    href={generarUrlGoogleMapsConCoordenadas(clienteMapa.latitud, clienteMapa.longitud)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-block',
+                      marginTop: '0.5rem',
+                      padding: '0.25rem 0.5rem',
+                      fontSize: '0.8rem',
+                      backgroundColor: '#4285f4',
+                      color: 'white',
+                      textDecoration: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    📍 Navegar (Mapa)
+                  </a>
                 </Popup>
               </Marker>
             </MapContainer>

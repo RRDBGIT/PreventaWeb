@@ -1,3 +1,5 @@
+//C:\PreventaWeb\BackEnd\controllers\clienteControllers.js
+
 const db = require('../models/db');
 
 exports.obtenerClientes = async (req, res) => {
@@ -62,13 +64,13 @@ exports.crearCliente = async (req, res) => {
         let sql;
         let params;
 
-        if (latitud != null && longitud != null) {
-            sql = `
-                INSERT INTO Clientes (
-                    NumeroCliente, RazonSocial, Direccion, Telefono, IdLocalidad, CUIT, Saldo, geolocalizacion
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, POINT(?, ?))
-            `;
-            params = [nuevoNumero, razon_social, direccion, telefono || null, id_localidad || null, cuit, saldo || 0, parseFloat(longitud), parseFloat(latitud)];
+       if (latitud != null && longitud != null) {
+    sql = `
+        INSERT INTO Clientes (
+            NumeroCliente, RazonSocial, Direccion, Telefono, IdLocalidad, CUIT, Saldo, geolocalizacion
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, POINT(?, ?)) -- POINT(longitud, latitud)`;
+    // Invertir el orden de los parámetros para POINT
+    params = [nuevoNumero, razon_social, direccion, telefono || null, id_localidad || null, cuit, saldo || 0, parseFloat(longitud), parseFloat(latitud)];
         } else {
             sql = `
                 INSERT INTO Clientes (
@@ -81,22 +83,21 @@ exports.crearCliente = async (req, res) => {
         const [result] = await db.execute(sql, params);
 
         const [nuevoCliente] = await db.execute(`
-            SELECT 
-                c.IdCliente AS id_cliente,
-                c.NumeroCliente AS numero_cliente,
-                c.RazonSocial AS razon_social,
-                c.Direccion AS direccion,
-                c.Telefono AS telefono,
-                c.CUIT AS cuit,
-                c.Saldo AS saldo,
-                l.Nombre AS localidad_nombre,
-                ST_X(c.geolocalizacion) AS longitud,
-                ST_Y(c.geolocalizacion) AS latitud
-            FROM Clientes c
-            INNER JOIN Localidades l ON c.IdLocalidad = l.IdLocalidad
-            WHERE c.IdCliente = ?
-        `, [result.insertId]);
-
+    SELECT 
+        c.IdCliente AS id_cliente,
+        c.NumeroCliente AS numero_cliente,
+        c.RazonSocial AS razon_social,
+        c.Direccion AS direccion,
+        c.Telefono AS telefono,
+        c.CUIT AS cuit,
+        c.Saldo AS saldo,
+        l.Nombre AS localidad_nombre,
+        ST_Y(c.geolocalizacion) AS latitud,  -- ST_Y es latitud
+        ST_X(c.geolocalizacion) AS longitud   -- ST_X es longitud
+    FROM Clientes c
+    INNER JOIN Localidades l ON c.IdLocalidad = l.IdLocalidad
+    WHERE c.IdCliente = ?
+	`, [result.insertId]);
         console.log("✅ Cliente creado:", nuevoCliente[0]);
         res.status(201).json(nuevoCliente[0]);
     } catch (error) {

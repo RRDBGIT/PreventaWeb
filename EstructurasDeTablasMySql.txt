@@ -106,7 +106,7 @@ INSERT INTO `Paises` (`IdPais`, `Nombre`) VALUES
 -- Estructura de tabla para la tabla `Pedidos`
 --
 
-CREATE TABLE `Pedidos` (
+CREATE `Pedidos` (
   `IdPedido` int(11) NOT NULL,
   `IdVendedor` int(11) DEFAULT NULL,
   `NumeroPedido` varchar(50) NOT NULL,
@@ -116,8 +116,9 @@ CREATE TABLE `Pedidos` (
   `IdFormaPago` int(11) DEFAULT NULL,
   `IdListaPrecios` int(11) DEFAULT NULL,
   `Total` decimal(12,2) NOT NULL,
-  `Estado` enum('PENDIENTE','CONFIRMADO','CANCELADO') DEFAULT 'CONFIRMADO'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `Estado` enum('PENDIENTE','CONFIRMADO','CANCELADO') DEFAULT 'CONFIRMADO',
+  `FinDelDia` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_un
 
 --
 -- Volcado de datos para la tabla `Pedidos`

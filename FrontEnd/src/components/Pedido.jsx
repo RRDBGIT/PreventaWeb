@@ -1,30 +1,44 @@
-// FrontEnd/src/components/Pedido.jsx
+// C:\PreventaWeb\FrontEnd\src\components\Pedido.jsx
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Importa useNavigate
+import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import Carrito from './Carrito';
 import BusquedaPorCodigo from './BusquedaPorCodigo';
 import ProductoSelector from './ProductoSelector';
 import ConfirmacionPedido from './ConfirmacionPedido';
 import ClienteSelector from './ClienteSelector';
-import { logout } from '../utils/auth'; // Importa la función de logout
-import '../Index.css'; // ✅ Importar estilos globales
+import { logout, getUsuario } from '../utils/auth';
+import ResumenCierreModal from './ResumenCierreModal';
+import '../Index.css';
 
 const Pedido = () => {
-    const navigate = useNavigate(); // Hook para navegar
-    const [paso, setPaso] = useState('cliente'); // 'cliente', 'pedido', 'confirmacion'
+    const navigate = useNavigate();
+    const [paso, setPaso] = useState('cliente');
     const [cliente, setCliente] = useState(null);
     const [carrito, setCarrito] = useState([]);
-    const [modoCarga, setModoCarga] = useState(null); // null, 'codigo', 'catalogo'
+    const [modoCarga, setModoCarga] = useState(null);
     const [listaPrecios, setListaPrecios] = useState('');
+    const [listaPreciosBloqueada, setListaPreciosBloqueada] = useState(false); // ✅ Nuevo estado
     const [formasPago, setFormasPago] = useState([]);
     const [formaPago, setFormaPago] = useState('');
     const [fechaVencimiento, setFechaVencimiento] = useState('');
-    // ✅ Estados adicionales para manejar la creación del pedido
     const [guardandoPedido, setGuardandoPedido] = useState(false);
     const [numeroPedidoCreado, setNumeroPedidoCreado] = useState(null);
-    const [pedidoCreado, setPedidoCreado] = useState(null); // ✅ Nuevo estado para el pedido completo
+    const [pedidoCreado, setPedidoCreado] = useState(null);
     const [mostrarPDF, setMostrarPDF] = useState(false);
+    const [mostrarResumenCierre, setMostrarResumenCierre] = useState(false);
+
+    // ✅ Corregido: usa 'nombre' según tu localStorage
+    const [nombreVendedor, setNombreVendedor] = useState('');
+
+    useEffect(() => {
+        const usuario = getUsuario();
+        if (usuario) {
+            const nombre = usuario.nombre || 'Vendedor';
+            setNombreVendedor(nombre);
+        }
+    }, []);
 
     useEffect(() => {
         const cargarCatalogos = async () => {
@@ -42,24 +56,33 @@ const Pedido = () => {
     }, []);
 
     const agregarAlCarrito = (producto, cantidad, precio) => {
+        // ✅ Bloquear lista de precios al agregar el PRIMER producto
+        if (carrito.length === 0 && !listaPreciosBloqueada) {
+            setListaPreciosBloqueada(true);
+        }
+
         const nuevoItem = {
             id: Date.now(),
             producto,
             cantidad,
             precioUnitario: precio,
-            importe: cantidad * precio
+            importe: cantidad * precio,
+            idListaPrecios: listaPrecios || null
         };
         setCarrito(prev => [...prev, nuevoItem]);
     };
 
     const eliminarDelCarrito = (id) => {
         setCarrito(carrito.filter(item => item.id !== id));
+        // Opcional: si el carrito queda vacío, podrías desbloquear (comentado por coherencia de pedido)
+        // if (carrito.length === 1) setListaPreciosBloqueada(false);
     };
 
-    // ✅ Función para vaciar el carrito
     const vaciarCarrito = () => {
         if (window.confirm("¿Está seguro de que desea vaciar el carrito?")) {
             setCarrito([]);
+            // ✅ Permitir cambiar lista si se vacía completamente
+            setListaPreciosBloqueada(false);
         }
     };
 
@@ -81,19 +104,14 @@ const Pedido = () => {
         setPaso(paso === 'confirmacion' ? 'pedido' : 'cliente');
     };
 
-    // ✅ Función corregida para crear el pedido en el backend
     const confirmarPedido = async (datosConfirmacion) => {
-        // Extraer datos del formulario de confirmación
-        // const { fechaEntrega, ordenCompra, observaciones, emailOpcional } = datosConfirmacion; // Puedes usarlos si el backend los necesita
-
-        // Obtener ID del vendedor del localStorage (simulando autenticación)
-        const usuario = JSON.parse(localStorage.getItem('usuario'));
+        const usuario = getUsuario();
         const idVendedor = usuario?.id;
 
         setGuardandoPedido(true);
         setNumeroPedidoCreado(null);
         setMostrarPDF(false);
-        setPedidoCreado(null); // ✅ Resetear pedido anterior
+        setPedidoCreado(null);
 
         try {
             const response = await API.post('/pedidos', {
@@ -103,14 +121,13 @@ const Pedido = () => {
                 idListaPrecios: listaPrecios,
                 total,
                 carrito,
-                idVendedor, // ✅ Enviar ID del vendedor
-                // Puedes enviar también fechaEntrega, ordenCompra, observaciones, emailOpcional si el backend los necesita
+                idVendedor,
             });
 
             const pedidoCreado = response.data;
             setNumeroPedidoCreado(pedidoCreado.numero_pedido);
-            setPedidoCreado(pedidoCreado); // ✅ Guardar el pedido completo
-            setMostrarPDF(true); // ✅ Activar visualización del PDF
+            setPedidoCreado(pedidoCreado);
+            setMostrarPDF(true);
 
             console.log("✅ Pedido creado con éxito:", pedidoCreado.numero_pedido);
 
@@ -122,47 +139,102 @@ const Pedido = () => {
         }
     };
 
-    // ✅ Función para reiniciar el flujo después de crear el pedido
     const reiniciarFlujo = () => {
         setMostrarPDF(false);
         setNumeroPedidoCreado(null);
-        setPedidoCreado(null); // ✅ Resetear pedido
+        setPedidoCreado(null);
         setPaso('cliente');
         setCliente(null);
         setCarrito([]);
         setModoCarga(null);
         setListaPrecios('');
+        setListaPreciosBloqueada(false); // ✅ Reiniciar estado de lista
         setFormaPago('');
         setFechaVencimiento('');
     };
 
-    // ✅ Función para manejar la selección de cliente
     const handleClienteSeleccionado = (clienteSeleccionado) => {
         setCliente(clienteSeleccionado);
-        // ✅ Pasar automáticamente a la pestaña de pedidos
         setPaso('pedido');
     };
 
-    // ✅ Función para manejar el logout
     const handleLogout = () => {
-        logout(navigate); // Llama a la función logout pasando navigate
+        logout(navigate);
+    };
+
+    const handleAbrirResumenCierre = () => {
+        setMostrarResumenCierre(true);
+    };
+
+    const handleConfirmarCierre = async () => {
+        try {
+            const usuario = getUsuario();
+            const idVendedor = usuario?.id;
+
+            if (!idVendedor) {
+                throw new Error('No se encontró el ID del vendedor. Por favor, inicie sesión nuevamente.');
+            }
+
+            const response = await API.post('/pedidos/cerrar-dia', {
+                idVendedor
+            });
+
+            const data = response.data;
+            if (data.success) {
+                alert(`✅ ${data.message}`);
+                setMostrarResumenCierre(false);
+            } else {
+                throw new Error(data.error || 'Error desconocido');
+            }
+
+        } catch (error) {
+            console.error('Error al cerrar día:', error);
+            const mensaje = error.response?.data?.error || error.message || 'Error al cerrar el día';
+            alert(`❌ ${mensaje}`);
+        }
     };
 
     return (
         <div className="layout-pedido" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', fontFamily: 'Arial', backgroundColor: '#f8f9fa' }}>
-            {/* Panel superior: Encabezado con título y botón de Cerrar Sesión */}
             <div style={{ padding: '1rem', backgroundColor: 'white', borderBottom: '2px solid #007bff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ margin: 0, fontSize: '1.2rem' }}>Panel de Pedidos</h2>
-                <button onClick={handleLogout} style={{ padding: '0.5rem 1rem', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                    Cerrar Sesión
-                </button>
+                <h2 style={{ margin: 0, fontSize: '1.2rem' }}>
+                    Panel de Pedidos - <span style={{ color: '#28a745' }}>{nombreVendedor}</span>
+                </h2>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button 
+                        onClick={handleAbrirResumenCierre}
+                        style={{ 
+                            padding: '0.5rem 1rem', 
+                            backgroundColor: '#28a745', 
+                            color: 'white', 
+                            border: 'none', 
+                            borderRadius: '4px', 
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.3rem'
+                        }}
+                    >
+                        📅 Cerrar Día
+                    </button>
+                    <button 
+                        onClick={handleLogout} 
+                        style={{ 
+                            padding: '0.5rem 1rem', 
+                            backgroundColor: '#dc3545', 
+                            color: 'white', 
+                            border: 'none', 
+                            borderRadius: '4px', 
+                            cursor: 'pointer' 
+                        }}
+                    >
+                        Cerrar Sesión
+                    </button>
+                </div>
             </div>
 
-            {/* Panel central: Formulario con tabs */}
             <div className="panel-formulario" style={{ flex: 1, display: 'flex', overflowY: 'auto' }}>
-                {/* Panel izquierdo: Formulario */}
                 <div className="panel-formulario-content" style={{ flex: 2, padding: '2rem', backgroundColor: 'white', borderRight: '1px solid #ddd', overflowY: 'auto' }}>
-                    {/* Tabs */}
                     <div style={{ display: 'flex', borderBottom: '2px solid #007bff', marginBottom: '1rem' }}>
                         <button
                             onClick={() => setPaso('cliente')}
@@ -209,19 +281,16 @@ const Pedido = () => {
                         </button>
                     </div>
 
-                    {/* Paso Cliente */}
                     {paso === 'cliente' && (
                         <ClienteSelector 
                             cliente={cliente} 
                             setCliente={setCliente} 
-                            onClienteSeleccionado={handleClienteSeleccionado} // ✅ Pasar la función corregida
+                            onClienteSeleccionado={handleClienteSeleccionado}
                         />
                     )}
 
-                    {/* Paso Pedido */}
                     {paso === 'pedido' && (
                         <div>
-                            {/* ✅ Label con la descripción del cliente */}
                             {cliente && (
                                 <div style={{ 
                                     backgroundColor: '#e9f7ef', 
@@ -265,13 +334,25 @@ const Pedido = () => {
                                 <select
                                     value={listaPrecios}
                                     onChange={(e) => setListaPrecios(e.target.value)}
+                                    disabled={listaPreciosBloqueada}
                                     style={{ marginLeft: '1rem', padding: '0.3rem' }}
                                 >
                                     <option value="">Seleccionar</option>
-                                    <option value="1">Lista 1 - Minoristas</option>
-                                    <option value="2">Lista 2 - Mayoristas</option>
-                                    <option value="3">Lista 3 - Especiales</option>
+                                    <option value="1">Lista 1</option>
+                                    <option value="2">Lista 2</option>
+                                    <option value="3">Lista 3</option>
+                                    <option value="4">Lista 4</option>
+                                    <option value="5">Lista 5</option>
+                                    <option value="6">Lista 6</option>
+                                    <option value="7">Lista 7</option>
+                                    <option value="8">Lista 8</option>
+                                    <option value="9">Lista 9</option>
                                 </select>
+                                {listaPreciosBloqueada && (
+                                    <span style={{ marginLeft: '0.5rem', color: '#28a745', fontWeight: 'bold' }}>
+                                        ✔ Fijada
+                                    </span>
+                                )}
                             </div>
 
                             {!modoCarga && (
@@ -310,7 +391,6 @@ const Pedido = () => {
                         </div>
                     )}
 
-                    {/* Paso Confirmación */}
                     {paso === 'confirmacion' && (
                         <ConfirmacionPedido
                             carrito={carrito}
@@ -318,16 +398,15 @@ const Pedido = () => {
                             cliente={cliente}
                             fechaVencimiento={fechaVencimiento}
                             formaPago={formasPago.find(fp => fp.IdPago == formaPago)?.Descripcion || ''}
-                            onConfirmar={confirmarPedido} // ✅ Pasar la función corregida
-                            guardando={guardandoPedido} // ✅ Pasar estado de carga
-                            numeroPedido={numeroPedidoCreado} // ✅ Pasar número de pedido creado
-                            mostrarPDF={mostrarPDF} // ✅ Pasar estado para mostrar PDF
-                            onCerrarPDF={reiniciarFlujo} // ✅ Pasar función para cerrar PDF y reiniciar
-                            pedidoCreado={pedidoCreado} // ✅ Pasar el pedido creado completo
+                            onConfirmar={confirmarPedido}
+                            guardando={guardandoPedido}
+                            numeroPedido={numeroPedidoCreado}
+                            mostrarPDF={mostrarPDF}
+                            onCerrarPDF={reiniciarFlujo}
+                            pedidoCreado={pedidoCreado}
                         />
                     )}
 
-                    {/* Botones de navegación */}
                     <div className="nav-buttons" style={{ marginTop: '2rem', textAlign: 'right', display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
                         {paso !== 'cliente' && (
                             <button
@@ -350,7 +429,6 @@ const Pedido = () => {
                     </div>
                 </div>
 
-                {/* Panel derecho: Carrito fijo */}
                 <div className="panel-carrito" style={{ flex: 1, backgroundColor: 'white', borderLeft: '1px solid #ddd', padding: '1rem', overflowY: 'auto' }}>
                     <h3 style={{ textAlign: 'center', borderBottom: '1px solid #eee', paddingBottom: '0.5rem' }}>🛒 Carrito</h3>
                     <Carrito items={carrito} onRemove={eliminarDelCarrito} total={total} />
@@ -394,6 +472,12 @@ const Pedido = () => {
                     )}
                 </div>
             </div>
+
+            <ResumenCierreModal
+                isOpen={mostrarResumenCierre}
+                onClose={() => setMostrarResumenCierre(false)}
+                onConfirmarCierre={handleConfirmarCierre}
+            />
         </div>
     );
 };

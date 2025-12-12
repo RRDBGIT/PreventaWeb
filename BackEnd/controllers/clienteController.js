@@ -18,7 +18,7 @@ exports.obtenerClientes = async (req, res) => {
                 ST_Y(c.geolocalizacion) AS latitud
             FROM Clientes c
             INNER JOIN Localidades l ON c.IdLocalidad = l.IdLocalidad
-            ORDER BY c.NumeroCliente
+            ORDER BY c.IdCliente
         `);
         console.log("✅ Clientes cargados:", clientes.length, "registros");
         res.json(clientes);

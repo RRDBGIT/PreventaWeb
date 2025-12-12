@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     tableColHeader: {
-        width: '20%',
+        width: '16%', // Ajustado para 6 columnas
         border: '1px solid #000',
         padding: 5,
         backgroundColor: '#f0f0f0',
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
         fontSize: 9,
     },
     tableCol: {
-        width: '20%',
+        width: '16%', // Ajustado para 6 columnas
         border: '1px solid #000',
         padding: 5,
         fontSize: 8,
@@ -94,31 +94,30 @@ const ReportePedidoPDF = ({ pedido }) => (
             {/* Detalles del Pedido */}
             <View style={styles.section}>
                 <Text style={{ fontWeight: 'bold', fontSize: 12 }}>Detalles del Pedido:</Text>
-                {/* ✅ Formatear la fecha */}
                 <Text>Fecha de Vencimiento: {new Date(pedido.fechaVencimiento).toLocaleDateString()}</Text>
-                <Text>Forma de Pago: {pedido.formaPago}</Text> {/* ✅ Usar formaPago (snake_case) */}
-                <Text>Lista de Precios: {pedido.listaPrecios}</Text> {/* ✅ Usar listaPrecios (snake_case) */}
+                <Text>Forma de Pago: {pedido.formaPago}</Text>
+                <Text>Lista de Precios: {pedido.listaPrecios}</Text>
                 <Text>Vendedor: {pedido.vendedor || 'No especificado'}</Text>
             </View>
 
             {/* Tabla de Productos */}
-            {/* ✅ Asegurarse de que carrito exista y tenga elementos */}
             {pedido.carrito && pedido.carrito.length > 0 && (
                 <View style={styles.section}>
                     <Text style={{ fontWeight: 'bold', fontSize: 12 }}>Productos:</Text>
                     <View style={styles.table}>
                         <View style={styles.tableRow}>
-                            <Text style={styles.tableColHeader}>Código</Text>
+                            <Text style={styles.tableColHeader}>Cód.</Text>
                             <Text style={styles.tableColHeader}>Descripción</Text>
-                            <Text style={styles.tableColHeader}>Cantidad</Text>
+                            <Text style={styles.tableColHeader}>Lista</Text> {/* ✅ Nueva columna */}
+                            <Text style={styles.tableColHeader}>Cant.</Text>
                             <Text style={styles.tableColHeader}>Precio Unit.</Text>
                             <Text style={styles.tableColHeader}>Importe</Text>
                         </View>
                         {pedido.carrito.map((item, index) => (
                             <View key={index} style={styles.tableRow}>
-                                {/* ✅ Asegurarse de que item.producto exista */}
                                 <Text style={styles.tableCol}>{item.producto?.Codigo || 'N/A'}</Text>
                                 <Text style={styles.tableCol}>{item.producto?.Descripcion || 'Producto sin descripción'}</Text>
+                                <Text style={styles.tableCol}>{item.IdLista || 'N/A'}</Text> {/* ✅ Mostrar IdLista */}
                                 <Text style={styles.tableCol}>{item.cantidad}</Text>
                                 <Text style={styles.tableCol}>${Number(item.precioUnitario).toFixed(2)}</Text>
                                 <Text style={styles.tableCol}>${Number(item.importe).toFixed(2)}</Text>

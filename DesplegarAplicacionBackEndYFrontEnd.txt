@@ -45,7 +45,7 @@ Runtime: Node
 Build Command: npm install
 Start Command: npm start
 Environment Variables:
-DB_HOST: 82.25.73.163
+DB_HOST: 82.25.73.163 o srv2020.hstgr.io
 DB_USER: u644789511_brizuelaruben
 DB_PASSWORD: Rrdb1975
 DB_NAME: u644789511_PreventaWeb

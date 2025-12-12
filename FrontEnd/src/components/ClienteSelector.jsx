@@ -89,56 +89,72 @@ const ClienteSelector = ({ cliente, setCliente, onClienteSeleccionado }) => {
   };
 
   const handleCrearCliente = async () => {
-    if (!nuevoCliente.razonSocial || !nuevoCliente.direccion || !nuevoCliente.idLocalidad || !nuevoCliente.cuit) {
-      alert("Por favor complete todos los campos obligatorios.");
-      return;
-    }
+  if (!nuevoCliente.razonSocial || !nuevoCliente.direccion || !nuevoCliente.idLocalidad || !nuevoCliente.cuit) {
+    alert("Por favor complete todos los campos obligatorios.");
+    return;
+  }
 
-    try {
-        if (editando) {
-        // ✅ Actualizar cliente existente
-        console.log('Editando cliente con ID:', nuevoCliente.id_cliente);
-        const clienteActualizado = await API.put(`/clientes/${nuevoCliente.id_cliente}`, {
-          razon_social: nuevoCliente.razonSocial,
-          direccion: nuevoCliente.direccion,
-          telefono: nuevoCliente.telefono || null,
-          id_localidad: nuevoCliente.idLocalidad || null,
-          cuit: nuevoCliente.cuit,
-          saldo: nuevoCliente.saldo,
-          latitud: nuevoCliente.latitud,
-          longitud: nuevoCliente.longitud
-        });
-
-        // 🔁 Recargar la lista de clientes para asegurar actualización visual
-        const clientesRes = await API.get('/clientes');
-        setClientes(clientesRes.data);
-
-        setCliente(clienteActualizado.data);
-        // ❌ No llamamos a onClienteSeleccionado aquí, para evitar cambio de pestaña
-        alert("Cliente actualizado exitosamente.");
-      } else {
-        // ...
-      }
-  
-     
-
-      setMostrarFormulario(false);
-      setEditando(false);
-      setNuevoCliente({
-        razonSocial: '',
-        direccion: '',
-        telefono: '',
-        idLocalidad: '',
-        cuit: '',
-        saldo: 0,
-        latitud: null,
-        longitud: null
+  try {
+    if (editando) {
+      // ✅ Actualizar cliente existente
+      console.log('Editando cliente con ID:', nuevoCliente.id_cliente);
+      const clienteActualizado = await API.put(`/clientes/${nuevoCliente.id_cliente}`, {
+        razon_social: nuevoCliente.razonSocial,
+        direccion: nuevoCliente.direccion,
+        telefono: nuevoCliente.telefono || null,
+        id_localidad: nuevoCliente.idLocalidad || null,
+        cuit: nuevoCliente.cuit,
+        saldo: nuevoCliente.saldo,
+        latitud: nuevoCliente.latitud,
+        longitud: nuevoCliente.longitud
       });
-    } catch (error) {
-      console.error("Error al guardar cliente:", error);
-      alert("Error al guardar cliente. Verifique los datos.");
+
+      const clientesRes = await API.get('/clientes');
+      setClientes(clientesRes.data);
+      setCliente(clienteActualizado.data);
+      alert("Cliente actualizado exitosamente.");
+    } else {
+      // ✅ CREAR CLIENTE NUEVO (FALTABA ESTO)
+      const nuevoClienteCreado = await API.post('/clientes', {
+        razon_social: nuevoCliente.razonSocial,
+        direccion: nuevoCliente.direccion,
+        telefono: nuevoCliente.telefono || null,
+        id_localidad: nuevoCliente.idLocalidad,
+        cuit: nuevoCliente.cuit,
+        saldo: nuevoCliente.saldo,
+        latitud: nuevoCliente.latitud,
+        longitud: nuevoCliente.longitud
+      });
+
+      // Actualizar lista de clientes
+      const clientesRes = await API.get('/clientes');
+      setClientes(clientesRes.data);
+
+      // Seleccionar el nuevo cliente
+      setCliente(nuevoClienteCreado.data);
+      if (onClienteSeleccionado) {
+        onClienteSeleccionado(nuevoClienteCreado.data);
+      }
+      alert("Cliente creado exitosamente.");
     }
-  };
+
+    setMostrarFormulario(false);
+    setEditando(false);
+    setNuevoCliente({
+      razonSocial: '',
+      direccion: '',
+      telefono: '',
+      idLocalidad: '',
+      cuit: '',
+      saldo: 0,
+      latitud: null,
+      longitud: null
+    });
+  } catch (error) {
+    console.error("Error al guardar cliente:", error);
+    alert("Error al guardar cliente. Verifique los datos.");
+  }
+};
 
   const handleSeleccionarCliente = (clienteSeleccionado) => {
     setCliente(clienteSeleccionado);

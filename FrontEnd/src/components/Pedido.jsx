@@ -19,7 +19,7 @@ const Pedido = () => {
     const [carrito, setCarrito] = useState([]);
     const [modoCarga, setModoCarga] = useState(null);
     const [listaPrecios, setListaPrecios] = useState('');
-    const [listaPreciosBloqueada, setListaPreciosBloqueada] = useState(false); // ✅ Nuevo estado
+    const [listaPreciosBloqueada, setListaPreciosBloqueada] = useState(false);
     const [formasPago, setFormasPago] = useState([]);
     const [formaPago, setFormaPago] = useState('');
     const [fechaVencimiento, setFechaVencimiento] = useState('');
@@ -29,7 +29,6 @@ const Pedido = () => {
     const [mostrarPDF, setMostrarPDF] = useState(false);
     const [mostrarResumenCierre, setMostrarResumenCierre] = useState(false);
 
-    // ✅ Corregido: usa 'nombre' según tu localStorage
     const [nombreVendedor, setNombreVendedor] = useState('');
 
     useEffect(() => {
@@ -56,7 +55,6 @@ const Pedido = () => {
     }, []);
 
     const agregarAlCarrito = (producto, cantidad, precio) => {
-        // ✅ Bloquear lista de precios al agregar el PRIMER producto
         if (carrito.length === 0 && !listaPreciosBloqueada) {
             setListaPreciosBloqueada(true);
         }
@@ -74,14 +72,11 @@ const Pedido = () => {
 
     const eliminarDelCarrito = (id) => {
         setCarrito(carrito.filter(item => item.id !== id));
-        // Opcional: si el carrito queda vacío, podrías desbloquear (comentado por coherencia de pedido)
-        // if (carrito.length === 1) setListaPreciosBloqueada(false);
     };
 
     const vaciarCarrito = () => {
         if (window.confirm("¿Está seguro de que desea vaciar el carrito?")) {
             setCarrito([]);
-            // ✅ Permitir cambiar lista si se vacía completamente
             setListaPreciosBloqueada(false);
         }
     };
@@ -148,7 +143,7 @@ const Pedido = () => {
         setCarrito([]);
         setModoCarga(null);
         setListaPrecios('');
-        setListaPreciosBloqueada(false); // ✅ Reiniciar estado de lista
+        setListaPreciosBloqueada(false);
         setFormaPago('');
         setFechaVencimiento('');
     };
@@ -166,6 +161,7 @@ const Pedido = () => {
         setMostrarResumenCierre(true);
     };
 
+    // ✅ Modificado: tras cierre exitoso, redirigir al login
     const handleConfirmarCierre = async () => {
         try {
             const usuario = getUsuario();
@@ -182,7 +178,8 @@ const Pedido = () => {
             const data = response.data;
             if (data.success) {
                 alert(`✅ ${data.message}`);
-                setMostrarResumenCierre(false);
+                // ✅ Cerrar sesión y redirigir al login tras el cierre
+                logout(navigate);
             } else {
                 throw new Error(data.error || 'Error desconocido');
             }

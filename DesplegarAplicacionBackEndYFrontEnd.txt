@@ -1,3 +1,12 @@
+explicacion:
+se debe subir el backend al github, como render esta conectado al github lo actualiza automaticamente
+generando un deploy.
+Render contiene el backOffice, y genera un link : https://preventaweb-api.onrender.com
+ese link es accesible desde el front end se configura en api.js:baseURL: 'https://preventaweb-api.onrender.com/api',
+se cambio en el archivo api.js del front end , luego ser realiza un npm bluid, eso se debe subir a hostinger en la carpeta /Public_html la estructura dentro debe quedar:
+static,assent-manifest.json, index.html
+
+
 ------- desplegar backEnd en Reder.com ---------------
 🚀 Plan de acción
 1. ✅ Elegir un servicio para el backend
@@ -100,12 +109,5 @@ html
 <script src="/static/js/main.053f2c2a.js"></script>
 → No debe tener main.df74127c.js.
 
-🔄 Reinicia tu frontend
-bash
-
-
-1
-2
-Ctrl + C
-npm start
-✅ Con estos cambios, el error 404 desaparecerá y tu aplicación cargará correctamente.
+luego se ingresa al frontEnd desde la direccion de hostinger:
+https://mediumturquoise-parrot-283564.hostingersite.com/

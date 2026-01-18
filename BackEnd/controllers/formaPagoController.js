@@ -3,7 +3,7 @@ const db = require('../models/db');
 exports.obtenerFormasPago = async (req, res) => {
     try {
         const [formasPago] = await db.execute(`
-            SELECT IdPago AS id, Descripcion AS descripcion
+            SELECT IdPago AS id, Descripcion AS descripcion, Predefinido AS predefinido
             FROM FormasDePago
             ORDER BY Descripcion
         `);

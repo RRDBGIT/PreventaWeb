@@ -34,7 +34,8 @@ exports.crearPedido = async (req, res) => {
         idListaPrecios,
         total,
         carrito,
-        idVendedor
+        idVendedor,
+        fechaEntrega // ✅ Recibir fecha de entrega del frontend
     } = req.body;
 
     console.log("📥 Datos recibidos en /api/pedidos:", req.body);
@@ -50,13 +51,30 @@ exports.crearPedido = async (req, res) => {
     try {
         await db.execute('START TRANSACTION');
 
+        // ✅ Verificar si la fecha de entrega es hoy (usando MySQL)
+        let usarFinDelDiaHoy = false;
+        if (fechaEntrega) {
+            try {
+                const [compareResult] = await db.execute(
+                    `SELECT CURDATE() = ? AS es_hoy`,
+                    [fechaEntrega]
+                );
+                usarFinDelDiaHoy = compareResult[0].es_hoy === 1;
+            } catch (error) {
+                console.error("❌ Error al verificar fecha de entrega:", error);
+                usarFinDelDiaHoy = false;
+            }
+        }
+
         // 1. Insertar cabecera del pedido
-        const [pedidoResult] = await db.execute(`
+        const query = `
             INSERT INTO Pedidos (
                 NumeroPedido, IdCliente, FechaVencimiento, 
-                IdFormaPago, IdListaPrecios, Total, Estado, IdVendedor
-            ) VALUES (?, ?, ?, ?, ?, ?, 'CONFIRMADO', ?)
-        `, [
+                IdFormaPago, IdListaPrecios, Total, Estado, IdVendedor, FinDelDia
+            ) VALUES (?, ?, ?, ?, ?, ?, 'CONFIRMADO', ?, ${usarFinDelDiaHoy ? 'NOW()' : '?'})
+        `;
+
+        const params = [
             numeroPedido,
             idCliente,
             fechaVencimiento,
@@ -64,7 +82,14 @@ exports.crearPedido = async (req, res) => {
             idListaPrecios || null,
             total,
             idVendedor
-        ]);
+        ];
+
+        // Solo agregar null si NO usamos NOW()
+        if (!usarFinDelDiaHoy) {
+            params.push(null);
+        }
+
+        const [pedidoResult] = await db.execute(query, params);
 
         const idPedido = pedidoResult.insertId;
 

@@ -31,6 +31,24 @@ const Pedido = () => {
 
     const [nombreVendedor, setNombreVendedor] = useState('');
 
+    // ✅ Función para establecer valores por defecto
+    const establecerValoresPorDefecto = () => {
+        // Fecha de vencimiento: hoy + 2 días
+        const hoy = new Date();
+        const dosDiasDespues = new Date(hoy);
+        dosDiasDespues.setDate(dosDiasDespues.getDate() + 2);
+        const fechaFormateada = dosDiasDespues.toISOString().split('T')[0];
+        setFechaVencimiento(fechaFormateada);
+
+        // Forma de pago predefinida
+        const predefinida = formasPago.find(fp => fp.predefinido === 1);
+        if (predefinida) {
+            setFormaPago(String(predefinida.id));
+        } else {
+            setFormaPago('');
+        }
+    };
+
     useEffect(() => {
         const usuario = getUsuario();
         if (usuario) {
@@ -51,8 +69,16 @@ const Pedido = () => {
                 console.error("Error al cargar catálogos", error);
             }
         };
+
         cargarCatalogos();
     }, []);
+
+    // ✅ Aplicar valores por defecto cuando formasPago esté cargado
+    useEffect(() => {
+        if (formasPago.length > 0) {
+            establecerValoresPorDefecto();
+        }
+    }, [formasPago]);
 
     const agregarAlCarrito = (producto, cantidad, precio) => {
         if (carrito.length === 0 && !listaPreciosBloqueada) {
@@ -99,41 +125,46 @@ const Pedido = () => {
         setPaso(paso === 'confirmacion' ? 'pedido' : 'cliente');
     };
 
-    const confirmarPedido = async (datosConfirmacion) => {
-        const usuario = getUsuario();
-        const idVendedor = usuario?.id;
+const confirmarPedido = async (datosConfirmacion) => {
+    const usuario = getUsuario();
+    const idVendedor = usuario?.id;
 
-        setGuardandoPedido(true);
-        setNumeroPedidoCreado(null);
-        setMostrarPDF(false);
-        setPedidoCreado(null);
+    setGuardandoPedido(true);
+    setNumeroPedidoCreado(null);
+    setMostrarPDF(false);
+    setPedidoCreado(null);
 
-        try {
-            const response = await API.post('/pedidos', {
-                idCliente: cliente.id_cliente,
-                fechaVencimiento,
-                idFormaPago: formaPago,
-                idListaPrecios: listaPrecios,
-                total,
-                carrito,
-                idVendedor,
-            });
+    try {
+        // ✅ Extraer fechaEntrega de los datos de confirmación
+        const { fechaEntrega } = datosConfirmacion;
 
-            const pedidoCreado = response.data;
-            setNumeroPedidoCreado(pedidoCreado.numero_pedido);
-            setPedidoCreado(pedidoCreado);
-            setMostrarPDF(true);
+        const response = await API.post('/pedidos', {
+            idCliente: cliente.id_cliente,
+            fechaVencimiento,
+            idFormaPago: formaPago,
+            idListaPrecios: listaPrecios,
+            total,
+            carrito,
+            idVendedor,
+            fechaEntrega // ✅ ¡Ahora se envía!
+        });
 
-            console.log("✅ Pedido creado con éxito:", pedidoCreado.numero_pedido);
+        const pedidoCreado = response.data;
+        setNumeroPedidoCreado(pedidoCreado.numero_pedido);
+        setPedidoCreado(pedidoCreado);
+        setMostrarPDF(true);
 
-        } catch (error) {
-            console.error("❌ ERROR al crear pedido:", error);
-            alert("Error al crear el pedido. Por favor, inténtelo de nuevo.");
-        } finally {
-            setGuardandoPedido(false);
-        }
-    };
+        console.log("✅ Pedido creado con éxito:", pedidoCreado.numero_pedido);
 
+    } catch (error) {
+        console.error("❌ ERROR al crear pedido:", error);
+        alert("Error al crear el pedido. Por favor, inténtelo de nuevo.");
+    } finally {
+        setGuardandoPedido(false);
+    }
+};
+
+    // ✅ Reiniciar flujo Y restablecer valores por defecto
     const reiniciarFlujo = () => {
         setMostrarPDF(false);
         setNumeroPedidoCreado(null);
@@ -144,8 +175,8 @@ const Pedido = () => {
         setModoCarga(null);
         setListaPrecios('');
         setListaPreciosBloqueada(false);
-        setFormaPago('');
-        setFechaVencimiento('');
+        // ✅ No resetear formaPago ni fecha aquí, porque se restablecerán en establecerValoresPorDefecto
+        establecerValoresPorDefecto(); // ✅ ¡Clave!
     };
 
     const handleClienteSeleccionado = (clienteSeleccionado) => {
@@ -161,7 +192,6 @@ const Pedido = () => {
         setMostrarResumenCierre(true);
     };
 
-    // ✅ Modificado: tras cierre exitoso, redirigir al login
     const handleConfirmarCierre = async () => {
         try {
             const usuario = getUsuario();
@@ -178,7 +208,6 @@ const Pedido = () => {
             const data = response.data;
             if (data.success) {
                 alert(`✅ ${data.message}`);
-                // ✅ Cerrar sesión y redirigir al login tras el cierre
                 logout(navigate);
             } else {
                 throw new Error(data.error || 'Error desconocido');
@@ -322,7 +351,7 @@ const Pedido = () => {
                                     style={{ marginLeft: '1rem', padding: '0.3rem' }}
                                 >
                                     <option value="">Seleccionar</option>
-                                   {formasPago.map(fp => (<option key={fp.id} value={fp.id}>{fp.descripcion}</option>))}
+                                   {formasPago.map(fp => (<option key={fp.id} value={String(fp.id)}>{fp.descripcion}</option>))}
                                 </select>
                             </div>
 
@@ -394,7 +423,7 @@ const Pedido = () => {
                             total={total}
                             cliente={cliente}
                             fechaVencimiento={fechaVencimiento}
-                            formaPago={formasPago.find(fp => fp.IdPago == formaPago)?.Descripcion || ''}
+                            formaPago={formasPago.find(fp => String(fp.id) === formaPago)?.descripcion || ''}
                             onConfirmar={confirmarPedido}
                             guardando={guardandoPedido}
                             numeroPedido={numeroPedidoCreado}

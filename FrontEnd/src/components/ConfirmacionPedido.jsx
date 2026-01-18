@@ -1,8 +1,9 @@
 // FrontEnd/src/components/ConfirmacionPedido.jsx
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
 import ReportePedidoPDF from './ReportePedidoPDF';
-import '../Index.css'; // ✅ Importar estilos globales
+import '../Index.css';
 
 const ConfirmacionPedido = ({ 
     carrito, 
@@ -15,12 +16,18 @@ const ConfirmacionPedido = ({
     numeroPedido,
     mostrarPDF,
     onCerrarPDF,
-    pedidoCreado // ✅ Recibir el pedido completo
+    pedidoCreado
 }) => {
     const [fechaEntrega, setFechaEntrega] = useState('');
-    const [ordenCompra, setOrdenCompra] = useState('');
-    const [observaciones, setObservaciones] = useState('');
-    const [emailOpcional, setEmailOpcional] = useState('');
+
+    // ✅ Establecer fecha de entrega por defecto: hoy + 1 día
+    useEffect(() => {
+        const hoy = new Date();
+        const manana = new Date(hoy);
+        manana.setDate(manana.getDate() + 1);
+        const fechaFormateada = manana.toISOString().split('T')[0]; // ✅ Corregido: solo un punto
+        setFechaEntrega(fechaFormateada);
+    }, []);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -28,35 +35,24 @@ const ConfirmacionPedido = ({
             alert("Seleccione fecha de entrega");
             return;
         }
-        // ✅ Pasar los datos del formulario a la función onConfirmar
         const datosConfirmacion = {
-            fechaEntrega,
-            ordenCompra,
-            observaciones,
-            emailOpcional
+            fechaEntrega
         };
         onConfirmar(datosConfirmacion);
     };
 
-    // ✅ Si se recibió un pedido creado, mostrar el PDF
     if (mostrarPDF && pedidoCreado) {
-        // Crear el objeto datosParaPDF con la estructura esperada por ReportePedidoPDF
         const datosParaPDF = {
             numeroPedido: pedidoCreado.numero_pedido,
             cliente: {
                 razon_social: pedidoCreado.razon_social_cliente,
-                // Puedes agregar más datos del cliente aquí si los necesita el PDF
-                // direccion: pedidoCreado.direccion_cliente, // Si el backend los devolviera
-                // localidad_nombre: pedidoCreado.localidad_nombre, // Si el backend los devolviera
-                // cuit: pedidoCreado.cuit_cliente, // Si el backend los devolviera
             },
             fechaVencimiento: pedidoCreado.fecha_vencimiento,
-            formaPago: pedidoCreado.forma_pago, // ✅ Del JOIN con FormasDePago
-            listaPrecios: pedidoCreado.lista_precios, // ✅ Del JOIN con ListasDePrecios
-            carrito: pedidoCreado.carrito_items || carrito, // Asegúrate de que el backend lo envíe o pásalo desde Pedido.jsx
+            formaPago: pedidoCreado.forma_pago,
+            listaPrecios: pedidoCreado.lista_precios,
+            carrito: pedidoCreado.carrito_items || carrito,
             total: pedidoCreado.total,
-	    vendedor: pedidoCreado.nombre_vendedor // ✅ Pasar el nombre del vendedor
-            // Puedes agregar más datos aquí si los necesitas en el PDF
+            vendedor: pedidoCreado.nombre_vendedor
         };
 
         return (
@@ -107,19 +103,17 @@ const ConfirmacionPedido = ({
                     </div>
                 </div>
 
-                {/* ✅ Mostrar PDF solo en escritorio, mensaje en móviles */}
                 <div className="pdf-container" style={{ 
                     height: 'calc(100vh - 150px)', 
                     border: '1px solid #ddd', 
                     borderRadius: '8px',
-                    display: window.innerWidth > 768 ? 'block' : 'none' // ✅ Ocultar en móviles
+                    display: window.innerWidth > 768 ? 'block' : 'none'
                 }}>
                     <PDFViewer width="100%" height="100%">
                         <ReportePedidoPDF pedido={datosParaPDF} />
                     </PDFViewer>
                 </div>
 
-                {/* ✅ Mensaje para móviles */}
                 {window.innerWidth <= 768 && (
                     <div style={{ 
                         textAlign: 'center', 
@@ -163,7 +157,6 @@ const ConfirmacionPedido = ({
         );
     }
 
-    // ✅ Si se está guardando, mostrar un mensaje
     if (guardando) {
         return (
             <div style={{ padding: '1rem', textAlign: 'center' }}>
@@ -173,13 +166,10 @@ const ConfirmacionPedido = ({
         );
     }
 
-    // ✅ Si llega aquí, es porque aún no se ha confirmado el pedido.
-    // Mostrar el formulario de confirmación.
     return (
         <div style={{ padding: '1rem', backgroundColor: '#fff', borderRadius: '8px', boxShadow: '0 0 5px rgba(0,0,0,0.1)' }}>
             <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>📄 Confirmación de Pedido</h2>
 
-            {/* Aquí puedes mostrar un resumen básico si lo deseas, o dejar solo el formulario */}
             <div style={{ backgroundColor: '#f8f9fa', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem' }}>
                 <p><strong>Cliente:</strong> {cliente?.razon_social}</p>
                 <p>{cliente?.direccion} - {cliente?.localidad_nombre}</p>
@@ -189,43 +179,13 @@ const ConfirmacionPedido = ({
             </div>
 
             <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: '1rem' }}>
+                <div style={{ marginBottom: '1.5rem' }}>
                     <label style={{ display: 'block', fontWeight: 'bold' }}>📅 Fecha de Entrega:</label>
                     <input
                         type="date"
                         value={fechaEntrega}
                         onChange={(e) => setFechaEntrega(e.target.value)}
                         required
-                        style={{ width: '100%', padding: '0.5rem', marginTop: '0.3rem' }}
-                    />
-                </div>
-
-                <div style={{ marginBottom: '1rem' }}>
-                    <label style={{ display: 'block', fontWeight: 'bold' }}>🔢 Orden de Compra (opcional):</label>
-                    <input
-                        type="text"
-                        value={ordenCompra}
-                        onChange={(e) => setOrdenCompra(e.target.value)}
-                        style={{ width: '100%', padding: '0.5rem', marginTop: '0.3rem' }}
-                    />
-                </div>
-
-                <div style={{ marginBottom: '1rem' }}>
-                    <label style={{ display: 'block', fontWeight: 'bold' }}>📝 Observaciones:</label>
-                    <textarea
-                        value={observaciones}
-                        onChange={(e) => setObservaciones(e.target.value)}
-                        rows="3"
-                        style={{ width: '100%', padding: '0.5rem', marginTop: '0.3rem' }}
-                    />
-                </div>
-
-                <div style={{ marginBottom: '1.5rem' }}>
-                    <label style={{ display: 'block', fontWeight: 'bold' }}>✉️ Email Opcional (para confirmación):</label>
-                    <input
-                        type="email"
-                        value={emailOpcional}
-                        onChange={(e) => setEmailOpcional(e.target.value)}
                         style={{ width: '100%', padding: '0.5rem', marginTop: '0.3rem' }}
                     />
                 </div>

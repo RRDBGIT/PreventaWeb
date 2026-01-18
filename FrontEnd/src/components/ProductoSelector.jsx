@@ -1,14 +1,15 @@
 // FrontEnd/src/components/ProductoSelector.jsx
+
 import React, { useState, useEffect } from 'react';
 import API from '../services/api';
-import ModalDetalleProducto from './ModalDetalleProducto'; // ✅ Nuevo componente
+import ModalDetalleProducto from './ModalDetalleProducto';
 
 const ProductoSelector = ({ listaPreciosId, onAdd }) => {
     const [productos, setProductos] = useState([]);
     const [busqueda, setBusqueda] = useState('');
     const [mostrarCatalogo, setMostrarCatalogo] = useState(false);
-    const [productoSeleccionado, setProductoSeleccionado] = useState(null); // ✅ Estado para el modal
-    const [mostrarModal, setMostrarModal] = useState(false); // ✅ Estado para mostrar/ocultar modal
+    const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+    const [mostrarModal, setMostrarModal] = useState(false);
 
     useEffect(() => {
         if (!listaPreciosId) return;
@@ -51,13 +52,17 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
         <div style={{ padding: '1rem' }}>
             <h3>📦 Cargar por Catálogo</h3>
 
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                 <input
                     type="text"
                     placeholder="Buscar por código o descripción"
                     value={busqueda}
                     onChange={(e) => setBusqueda(e.target.value.toUpperCase())}
-                    style={{ flex: 1, padding: '0.5rem' }}
+                    style={{ 
+                        flex: 1, 
+                        padding: '0.5rem',
+                        minWidth: '180px'
+                    }}
                 />
                 <button
                     onClick={() => setMostrarCatalogo(!mostrarCatalogo)}
@@ -67,7 +72,8 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
                         color: 'white',
                         border: 'none',
                         borderRadius: '4px',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
                     }}
                 >
                     {mostrarCatalogo ? 'Ocultar Catálogo' : 'Mostrar Catálogo'}
@@ -78,44 +84,53 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
                 <div style={{ 
                     marginTop: '1rem', 
                     border: '1px solid #ccc', 
-                    borderRadius: '4px', 
-                    maxHeight: '300px', // ✅ Altura máxima
-                    overflowY: 'auto', // ✅ Scroll vertical
-                    overflowX: 'hidden' // ✅ Ocultar scroll horizontal
+                    borderRadius: '4px',
+                    overflowX: 'auto',
+                    WebkitOverflowScrolling: 'touch',
+                    msOverflowStyle: '-ms-autohiding-scrollbar'
                 }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <table style={{ 
+                        width: '100%',
+                        borderCollapse: 'collapse',
+                        fontSize: '0.7rem' // ✅ Fuente general más pequeña
+                    }}>
                         <thead>
                             <tr style={{ backgroundColor: '#f2f2f2' }}>
                                 <th style={{ 
-                                    padding: '8px', 
+                                    padding: '6px 8px',
                                     textAlign: 'left', 
-                                    border: '1px solid #ddd', 
-                                    fontSize: '0.9rem',
-                                    width: '20%' // ✅ Ancho reducido
-                                }}>Código</th>
+                                    border: '1px solid #ddd',
+                                    width: '12%',
+                                    fontSize: '0.7rem' // ✅ Tamaño consistente
+                                }}>Cod</th>
                                 <th style={{ 
-                                    padding: '8px', 
+                                    padding: '6px 8px',
                                     textAlign: 'left', 
-                                    border: '1px solid #ddd', 
-                                    fontSize: '0.9rem',
-                                    width: '60%' // ✅ Ancho reducido
+                                    border: '1px solid #ddd',
+                                    width: '63%',
+                                    fontSize: '0.7rem'
                                 }}>Descripción</th>
                                 <th style={{ 
-                                    padding: '8px', 
+                                    padding: '6px 8px',
                                     textAlign: 'right', 
-                                    border: '1px solid #ddd', 
-                                    fontSize: '0.9rem',
-                                    width: '20%' // ✅ Ancho reducido
+                                    border: '1px solid #ddd',
+                                    width: '25%',
+                                    fontSize: '0.7rem'
                                 }}>Precio</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filtrados.length === 0 ? (
                                 <tr>
-                                    <td colSpan="3" style={{ padding: '20px', textAlign: 'center', fontStyle: 'italic' }}>
+                                    <td colSpan="3" style={{ 
+                                        padding: '16px', 
+                                        textAlign: 'center', 
+                                        fontStyle: 'italic',
+                                        fontSize: '0.8rem'
+                                    }}>
                                         {busqueda 
                                             ? `No se encontraron productos que coincidan con "${busqueda}"`
-                                            : "No hay productos disponibles en esta lista de precios. Verifique la configuración en la base de datos o el ID de la lista."
+                                            : "No hay productos disponibles en esta lista de precios."
                                         }
                                     </td>
                                 </tr>
@@ -127,13 +142,31 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
                                             borderBottom: '1px solid #eee',
                                             cursor: 'pointer',
                                             backgroundColor: '#fff',
-                                            fontSize: '0.85rem' // ✅ Fuente más pequeña
+                                            height: 'auto'
                                         }}
-                                        onClick={() => handleSeleccionarProducto(p)} // ✅ Abrir modal al hacer clic
+                                        onClick={() => handleSeleccionarProducto(p)}
                                     >
-                                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{p.Codigo}</td>
-                                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{p.Descripcion}</td>
-                                        <td style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'right' }}>
+                                        <td style={{ 
+                                            padding: '6px 8px', 
+                                            border: '1px solid #ddd',
+                                            wordBreak: 'break-word',
+                                            fontSize: '0.75rem' // ✅ Ligeramente más grande para códigos
+                                        }}>{p.Codigo}</td>
+                                        <td style={{ 
+                                            padding: '6px 8px', 
+                                            border: '1px solid #ddd',
+                                            wordBreak: 'break-word',
+                                            lineHeight: '1.3',
+                                            fontSize: '0.7rem'
+                                        }}>{p.Descripcion}</td>
+                                        <td style={{ 
+                                            padding: '6px 8px', 
+                                            border: '1px solid #ddd', 
+                                            textAlign: 'right',
+                                            wordBreak: 'break-word',
+                                            fontSize: '0.65rem', // ✅ ¡Más pequeña solo en Precio!
+                                            fontWeight: 'bold' // ✅ Para mantener legibilidad
+                                        }}>
                                             ${parseFloat(p.Precio).toFixed(2)}
                                         </td>
                                     </tr>
@@ -144,7 +177,6 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
                 </div>
             )}
 
-            {/* ✅ Modal para detalle del producto */}
             {mostrarModal && productoSeleccionado && (
                 <ModalDetalleProducto
                     producto={productoSeleccionado}
@@ -157,8 +189,13 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
             )}
 
             {mostrarCatalogo && (
-                <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-                    <small>💡 Haga clic en cualquier producto para ver detalles y agregar al carrito.</small>
+                <div style={{ 
+                    marginTop: '0.75rem', 
+                    textAlign: 'center',
+                    fontSize: '0.8rem',
+                    color: '#666'
+                }}>
+                    💡 Haga clic en cualquier producto para ver detalles y agregar al carrito.
                 </div>
             )}
         </div>

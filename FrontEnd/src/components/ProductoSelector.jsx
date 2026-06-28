@@ -81,18 +81,21 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
             </div>
 
             {mostrarCatalogo && (
+                // ✅ ÚNICO CAMBIO: Agregar maxHeight y overflowY
                 <div style={{ 
                     marginTop: '1rem', 
                     border: '1px solid #ccc', 
                     borderRadius: '4px',
                     overflowX: 'auto',
+                    overflowY: 'auto', // ✅ Scroll vertical agregado
+                    maxHeight: '300px', // ✅ Altura máxima para activar el scroll
                     WebkitOverflowScrolling: 'touch',
                     msOverflowStyle: '-ms-autohiding-scrollbar'
                 }}>
                     <table style={{ 
                         width: '100%',
                         borderCollapse: 'collapse',
-                        fontSize: '0.7rem' // ✅ Fuente general más pequeña
+                        fontSize: '0.7rem'
                     }}>
                         <thead>
                             <tr style={{ backgroundColor: '#f2f2f2' }}>
@@ -101,7 +104,7 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
                                     textAlign: 'left', 
                                     border: '1px solid #ddd',
                                     width: '12%',
-                                    fontSize: '0.7rem' // ✅ Tamaño consistente
+                                    fontSize: '0.7rem'
                                 }}>Cod</th>
                                 <th style={{ 
                                     padding: '6px 8px',
@@ -150,7 +153,7 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
                                             padding: '6px 8px', 
                                             border: '1px solid #ddd',
                                             wordBreak: 'break-word',
-                                            fontSize: '0.75rem' // ✅ Ligeramente más grande para códigos
+                                            fontSize: '0.75rem'
                                         }}>{p.Codigo}</td>
                                         <td style={{ 
                                             padding: '6px 8px', 
@@ -164,8 +167,8 @@ const ProductoSelector = ({ listaPreciosId, onAdd }) => {
                                             border: '1px solid #ddd', 
                                             textAlign: 'right',
                                             wordBreak: 'break-word',
-                                            fontSize: '0.65rem', // ✅ ¡Más pequeña solo en Precio!
-                                            fontWeight: 'bold' // ✅ Para mantener legibilidad
+                                            fontSize: '0.65rem',
+                                            fontWeight: 'bold'
                                         }}>
                                             ${parseFloat(p.Precio).toFixed(2)}
                                         </td>

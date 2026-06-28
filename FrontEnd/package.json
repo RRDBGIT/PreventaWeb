@@ -16,6 +16,8 @@
     "react-scripts": "5.0.1"
   },
   "scripts": {
+    "prebuild": "node scripts/update-version.js",
+    "prestart": "node scripts/update-version.js",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

@@ -1,4 +1,5 @@
 // FrontEnd/src/components/Carrito.jsx
+
 import React from 'react';
 
 const Carrito = ({ items, onRemove, total }) => {
@@ -13,13 +14,13 @@ const Carrito = ({ items, onRemove, total }) => {
                         fontWeight: 'bold',
                         padding: '0.5rem 0',
                         borderBottom: '2px solid #ddd',
-                        fontSize: '0.9rem'
+                        fontSize: '0.8rem'
                     }}>
-                        <div style={{ width: '20%' }}>Código</div>
-                        <div style={{ width: '40%' }}>Descripción</div>
-                        <div style={{ width: '15%', textAlign: 'center' }}>Cant.</div>
-                        <div style={{ width: '15%', textAlign: 'right' }}>Precio</div>
-                        <div style={{ width: '10%' }}></div>
+                        <div style={{ width: '10%' }}>Cod</div>
+                        <div style={{ width: '30%' }}>Descripción</div>
+                        <div style={{ width: '8%', textAlign: 'center' }}>Cant.</div>
+                        <div style={{ width: '37%', textAlign: 'right' }}>Precio</div>
+                        <div style={{ width: '15%' }}></div>
                     </div>
 
                     <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '5px' }}>
@@ -29,13 +30,19 @@ const Carrito = ({ items, onRemove, total }) => {
                                 padding: '0.7rem 0',
                                 borderBottom: '1px solid #eee',
                                 alignItems: 'center',
-                                fontSize: '0.95rem'
+                                fontSize: '0.8rem'
                             }}>
-                                <div style={{ width: '20%' }}>{item.producto.Codigo}</div>
-                                <div style={{ width: '40%' }}>{item.producto.Descripcion}</div>
-                                <div style={{ width: '15%', textAlign: 'center' }}>{item.cantidad}</div>
-                                <div style={{ width: '15%', textAlign: 'right' }}>${item.precioUnitario.toFixed(2)}</div>
-                                <div style={{ width: '10%' }}>
+                                <div style={{ width: '10%' }}>{item.producto.Codigo}</div>
+                                <div style={{ width: '30%' }}>{item.producto.Descripcion}</div>
+                                <div style={{ width: '8%', textAlign: 'center' }}>{item.cantidad}</div>
+                                <div style={{ 
+                                    width: '37%', 
+                                    textAlign: 'right',
+                                    whiteSpace: 'nowrap'
+                                }}>
+                                    ${item.precioUnitario.toFixed(2)}
+                                </div>
+                                <div style={{ width: '15%' }}>
                                     <button
                                         onClick={() => onRemove(item.id)}
                                         style={{
@@ -45,7 +52,7 @@ const Carrito = ({ items, onRemove, total }) => {
                                             border: 'none',
                                             borderRadius: '3px',
                                             cursor: 'pointer',
-                                            fontSize: '0.8rem'
+                                            fontSize: '0.75rem'
                                         }}
                                     >
                                         ✕
@@ -61,7 +68,7 @@ const Carrito = ({ items, onRemove, total }) => {
                         borderTop: '2px solid #007bff',
                         fontWeight: 'bold',
                         textAlign: 'right',
-                        fontSize: '1.2rem'
+                        fontSize: '1.0rem'
                     }}>
                         💰 Total: ${total.toFixed(2)}
                     </div>

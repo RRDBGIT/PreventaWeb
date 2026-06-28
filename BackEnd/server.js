@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const actualizacionesRoutes = require('./routes/actualizaciones');
+const versionRoutes = require('./routes/version');
 dotenv.config();
 
 const app = express();
@@ -27,6 +28,7 @@ app.use('/api/pedidos', require('./routes/pedidos'));
 app.use('/api/catalogos', require('./routes/catalogos'));
 app.use('/api/clientes', require('./routes/clientes')); // ✅ Esto debería montar /api/clientes
 app.use('/api/actualizaciones', actualizacionesRoutes); // ← Esta línea debe existir
+app.use('/api/version', versionRoutes);
 // ✅ Ruta para actualizaciones (usará la nueva estructura)
 app.use('/api/actualizaciones', require('./routes/actualizaciones'));
 
